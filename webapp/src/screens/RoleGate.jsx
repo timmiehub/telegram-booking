@@ -17,14 +17,14 @@ export default function RoleGate({ userName, onPickClient, onPickMaster }) {
         <FeatureHighlights onOpenChange={setStoriesOpen} />
 
         <img
-          src={assetUrl('hero-gate-v3.png')}
+          src={assetUrl('hero-brand.svg')}
           alt=""
           className="role-gate-hero fade-up"
-          width={220}
-          height={220}
+          width={200}
+          height={200}
         />
         <p className="meta-label">Онлайн-запись</p>
-        <h1 className="display mt-2 text-[26px] font-extrabold leading-tight">
+        <h1 className="display mt-2 text-[30px] leading-[1.05]">
           Кто вы?
         </h1>
         <p className="mt-2 max-w-[18rem] text-sm leading-snug text-[var(--brand-muted)]">

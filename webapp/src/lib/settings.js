@@ -87,7 +87,7 @@ export function mediaFrameStyle(frame) {
 
 /** Accent from button primary — soft gold mix, no manual picker */
 export function accentFromPrimary(primary) {
-  const p = String(primary || '#4db0e0').trim()
+  const p = String(primary || '#cf9a4a').trim()
   if (!/^#[0-9a-fA-F]{6}$/.test(p)) return '#e8b84a'
   const r = parseInt(p.slice(1, 3), 16)
   const g = parseInt(p.slice(3, 5), 16)

@@ -1,20 +1,20 @@
 import { assetUrl } from './assets'
 
-/** Тема по умолчанию — спокойный салонный craft в Mini App */
+/** Тема по умолчанию — тёплый акцент вместо дефолтного телеграм-синего */
 export const DEFAULT_THEME = {
-  primary_color: '#4db0e0',
+  primary_color: '#cf9a4a',
   secondary_color: '#e8eaed',
-  accent_color: '#e8b84a',
+  accent_color: '#5fa98f',
   background_color: '#0c1016',
   surface_color: '#151b24',
   text_color: '#f4f6f8',
-  button_text_color: '#061018',
+  button_text_color: '#1c1408',
   button_style: 'solid',
   border_radius_px: 14,
   font_family:
     '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif',
   display_font_family:
-    '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif',
+    '"Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif',
   logo_url: 'avatar-demo.svg',
   cover_url: 'cover-demo.svg',
   business_name: 'Запись',

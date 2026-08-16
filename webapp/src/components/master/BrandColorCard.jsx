@@ -18,7 +18,7 @@ export default function BrandColorCard({
   onOpenPro,
 }) {
   const pro = canUseBrand(settings)
-  const [primary, setPrimary] = useState(theme?.primary_color || '#4db0e0')
+  const [primary, setPrimary] = useState(theme?.primary_color || '#cf9a4a')
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState('')
   const timer = useRef(null)

@@ -51,8 +51,8 @@ export default class ErrorBoundary extends Component {
               padding: '0 18px',
               borderRadius: 14,
               border: 0,
-              background: '#4db0e0',
-              color: '#061018',
+              background: '#cf9a4a',
+              color: '#1c1408',
               fontWeight: 700,
             }}
             onClick={() => window.location.reload()}

@@ -4,19 +4,19 @@
   --tg-bg: #0c1016;
   --tg-text: #f4f6f8;
   --tg-hint: #9aa3b2;
-  --tg-button: #4db0e0;
+  --tg-button: #cf9a4a;
   --tg-secondary: #1a212b;
 
-  --brand-primary: #4db0e0;
-  --brand-primary-deep: #2f8fbf;
+  --brand-primary: #cf9a4a;
+  --brand-primary-deep: #9c7130;
   --brand-secondary: #e8eaed;
-  --brand-accent: #e8b84a;
+  --brand-accent: #5fa98f;
   --brand-bg: #0c1016;
   --brand-surface: #151b24;
   --brand-surface-2: #1c2430;
   --brand-text: #f4f6f8;
   --brand-muted: #97a1b0;
-  --brand-btn-text: #061018;
+  --brand-btn-text: #1c1408;
   --brand-radius: 14px;
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -25,10 +25,10 @@
   --brand-success: #3dba8b;
   --brand-warning: #e0b45a;
   --brand-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --brand-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --brand-display: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --shadow-btn: 0 10px 24px color-mix(in srgb, var(--brand-primary) 32%, transparent);
-  --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.28);
+  --shadow-btn: 0 10px 24px color-mix(in srgb, var(--brand-primary) 30%, transparent);
+  --shadow-soft: 0 10px 22px color-mix(in srgb, #000 34%, transparent);
 
   /* Инпуты: тёмная поверхность в тон кабинета */
   --field-bg: color-mix(in srgb, var(--brand-surface-2) 88%, #0a0c10);
@@ -58,7 +58,8 @@ body {
 .display {
   font-family: var(--brand-display);
   letter-spacing: -0.03em;
-  font-weight: 700;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .app-shell {
@@ -3090,10 +3091,10 @@ input.field:-webkit-autofill:focus {
   padding: 3px;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--brand-primary) 92%, #fff),
+    color-mix(in srgb, var(--brand-primary) 85%, #fff),
     var(--brand-primary-deep)
   );
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--brand-primary) 16%, transparent);
 }
 
 .feature-highlight.is-seen .feature-highlight-ring {
@@ -3104,8 +3105,8 @@ input.field:-webkit-autofill:focus {
 .feature-highlight.accent-pro .feature-highlight-ring {
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--brand-primary) 100%, #fff 18%),
-    #1a9fd4 45%,
+    color-mix(in srgb, var(--brand-accent) 100%, #fff 18%),
+    var(--brand-primary) 55%,
     var(--brand-primary-deep)
   );
 }
