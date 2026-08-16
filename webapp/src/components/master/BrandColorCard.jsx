@@ -89,7 +89,7 @@ export default function BrandColorCard({
         </div>
         {!pro ? (
           <span className="brand-color-lock shrink-0" aria-hidden>
-            🔒 Pro
+            Pro
           </span>
         ) : null}
       </div>

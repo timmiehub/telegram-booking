@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import AppShell from '../components/AppShell'
 import { useTelegramChrome, haptic } from '../hooks/useTelegramChrome'
-import { fetchBusinessSettings, mediaFrameStyle, updateBusinessSettings } from '../lib/settings'
+import {
+  fetchBusinessSettings,
+  mediaFrameStyle,
+  normalizeMediaFrame,
+  updateBusinessSettings,
+} from '../lib/settings'
 import { isProPlan } from '../lib/pro'
 import { fetchCompletedVisitsCount } from '../lib/growthMetrics'
 import { profileCompletion } from '../lib/profileProgress'
@@ -19,6 +24,13 @@ import { FEEDBACK_TG, FEEDBACK_TG_URL } from '../lib/lifetimePro'
 import { categoryLabel } from '../lib/searchExpand'
 import Icon from '../components/Icon'
 import { WebApp } from '../lib/telegram'
+import {
+  updateBusinessMedia,
+  uploadBusinessImage,
+} from '../lib/media'
+import MediaCropSheet from '../components/MediaCropSheet'
+import { useToast } from '../hooks/useToast'
+import Toast from '../components/Toast'
 
 const TAB_ICONS = {
   today: 'icon-calendar',
@@ -83,6 +95,11 @@ export default function MasterCabinet({
   const [nudgeVisits, setNudgeVisits] = useState(0)
   const [nudgeOpen, setNudgeOpen] = useState(false)
   const [nudgeBusy, setNudgeBusy] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState('')
+  const [crop, setCrop] = useState(null)
+  const avatarInputRef = useRef(null)
+  const coverInputRef = useRef(null)
+  const { message: toastMsg, kind: toastKind, showToast } = useToast()
 
   const openMore = (section = 'hub') => {
     setProfileSection(section === 'media' ? 'profile' : section || 'hub')
@@ -101,6 +118,54 @@ export default function MasterCabinet({
       /* fall through */
     }
     window.open(FEEDBACK_TG_URL, '_blank', 'noopener,noreferrer')
+  }
+
+  async function onPickHeaderFile(kind, file) {
+    if (!file || !businessId) return
+    setPhotoBusy(kind)
+    const up = await uploadBusinessImage({ businessId, file, kind })
+    if (!up.ok) {
+      setPhotoBusy('')
+      showToast(up.error || 'Не удалось загрузить фото')
+      return
+    }
+    const patch = kind === 'cover' ? { coverUrl: up.url } : { avatarUrl: up.url }
+    const upd = await updateBusinessMedia({ businessId, masterId, ...patch })
+    setPhotoBusy('')
+    if (!upd.ok) {
+      showToast(upd.error || 'Не сохранилось')
+      return
+    }
+    haptic('success')
+    showToast(kind === 'cover' ? 'Шапка загружена' : 'Ава загружена')
+    onBusinessMediaChange?.()
+    setCrop({ kind, url: up.url })
+  }
+
+  function openCropFromHeader(kind) {
+    const url =
+      kind === 'cover'
+        ? assetUrl(theme.cover_url || 'cover-demo.svg')
+        : assetUrl(theme.logo_url || 'avatar-demo.svg')
+    setCrop({ kind, url })
+  }
+
+  async function onHeaderCropSave(layer) {
+    const kind = crop?.kind || 'avatar'
+    const nextFrame = normalizeMediaFrame({
+      ...(mediaFrame || {}),
+      [kind]: layer,
+    })
+    setMediaFrame(nextFrame)
+    setCrop(null)
+    if (!businessId) return
+    const res = await updateBusinessSettings(businessId, { media_frame: nextFrame })
+    if (!res.ok) {
+      showToast(res.error || 'Кадр не сохранился')
+      return
+    }
+    haptic('success')
+    showToast('Кадр сохранён')
   }
 
   const orgs = useMemo(
@@ -191,32 +256,103 @@ export default function MasterCabinet({
 
   return (
     <AppShell>
-      <header className="profile-header-card profile-header-card--centered fade-up" style={frameStyle}>
-        <div className="profile-header-cover-wrap">
-          <div
-            className="profile-header-cover"
-            style={{ backgroundImage: `url(${cover})` }}
+      <Toast message={toastMsg} kind={toastKind} />
+      <header className="masthead fade-up" style={frameStyle}>
+        <div
+          className="masthead-cover"
+          style={{ backgroundImage: `url(${cover})` }}
+          onClick={() => {
+            haptic('light')
+            openCropFromHeader('cover')
+          }}
+        >
+          <button
+            type="button"
+            className="masthead-badge masthead-badge--cover"
+            aria-label="Сменить шапку"
+            disabled={photoBusy === 'cover'}
+            onClick={(e) => {
+              e.stopPropagation()
+              haptic('light')
+              coverInputRef.current?.click()
+            }}
+          >
+            {photoBusy === 'cover' ? (
+              <span className="masthead-badge-spin" aria-hidden />
+            ) : (
+              <Icon name="icon-edit" size={18} />
+            )}
+          </button>
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              e.target.value = ''
+              if (f) onPickHeaderFile('cover', f)
+            }}
           />
         </div>
-        <div className="profile-header-body">
-          <span className="profile-header-avatar-wrap">
-            <img
-              src={logo}
-              alt=""
-              className="profile-header-avatar"
-              width={76}
-              height={76}
-              decoding="async"
+
+        <div className="masthead-body">
+          <div className="masthead-avatar-wrap">
+            <button
+              type="button"
+              className="masthead-avatar"
+              aria-label="Открыть кадр аватара"
+              onClick={() => {
+                haptic('light')
+                openCropFromHeader('avatar')
+              }}
+            >
+              <img
+                src={logo}
+                alt=""
+                width={84}
+                height={84}
+                decoding="async"
+              />
+            </button>
+            <button
+              type="button"
+              className="masthead-badge masthead-badge--avatar"
+              aria-label="Сменить аватар"
+              disabled={photoBusy === 'avatar'}
+              onClick={(e) => {
+                e.stopPropagation()
+                haptic('light')
+                avatarInputRef.current?.click()
+              }}
+            >
+              {photoBusy === 'avatar' ? (
+                <span className="masthead-badge-spin" aria-hidden />
+              ) : (
+                <Icon name="icon-camera" size={16} />
+              )}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (f) onPickHeaderFile('avatar', f)
+              }}
             />
-          </span>
-          <div className="profile-header-text">
-            <div className="profile-header-title-row">
-              <h1 className="display truncate text-[22px] font-bold leading-tight">
+          </div>
+
+          <div className="masthead-info">
+            <div className="masthead-title-row">
+              <h1 className="display truncate text-[20px] font-bold leading-tight">
                 {businessName || theme.business_name || 'Заведение'}
               </h1>
               {isPro ? <ProBadge compact /> : null}
             </div>
-            <p className="mt-1 text-sm text-[var(--brand-muted)]">
+            <p className="mt-0.5 text-sm text-[var(--brand-muted)]">
               {tab === 'schedule'
                 ? 'Рабочие дни и часы'
                 : tab === 'more'
@@ -387,6 +523,20 @@ export default function MasterCabinet({
         busy={nudgeBusy}
         onLater={() => dismissProNudge({ openPro: false })}
         onOpenPro={() => dismissProNudge({ openPro: true })}
+      />
+
+      <MediaCropSheet
+        open={!!crop}
+        kind={crop?.kind || 'avatar'}
+        imageUrl={crop?.url || ''}
+        previewCoverUrl={cover}
+        previewAvatarUrl={logo}
+        businessName={businessName || theme.business_name || 'Заведение'}
+        initialLayer={
+          crop?.kind === 'cover' ? mediaFrame?.cover : mediaFrame?.avatar
+        }
+        onClose={() => setCrop(null)}
+        onSave={onHeaderCropSave}
       />
     </AppShell>
   )

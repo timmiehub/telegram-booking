@@ -213,6 +213,147 @@ html.has-main-button .app-shell,
 }
 
 /* Шапка профиля / записи — TG channel style */
+/* Masthead — современная шапка кабинета (Telegram-style) */
+.masthead {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.masthead-cover {
+  height: 160px;
+  width: 100%;
+  background-color: var(--brand-surface-2);
+  background-size: calc(var(--cover-scale, 1) * 100%);
+  background-position: var(--cover-pos-x, 50%) var(--cover-pos-y, 50%);
+  background-repeat: no-repeat;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.masthead-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 16px 12px;
+  margin-top: -42px;
+  position: relative;
+  z-index: 2;
+}
+
+.masthead-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.masthead-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--brand-surface);
+  background: var(--brand-surface-2);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: block;
+}
+
+.masthead-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--avatar-pos-x, 50%) var(--avatar-pos-y, 50%);
+  transform: scale(var(--avatar-scale, 1));
+  transform-origin: center center;
+  display: block;
+}
+
+.masthead-info {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 4px;
+}
+
+.masthead-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.masthead-info h1 {
+  margin: 0;
+  font-family: var(--brand-display);
+  letter-spacing: -0.03em;
+}
+
+/* Бейджи редактирования на шапке и аватарке */
+.masthead-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.masthead-badge--cover {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s ease;
+}
+
+.masthead-badge--cover:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.masthead-badge--avatar {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  border: 2px solid var(--brand-surface);
+  transition: transform 0.15s ease;
+}
+
+.masthead-badge--avatar:active {
+  transform: scale(0.92);
+}
+
+.masthead-badge-spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: badge-spin 0.7s linear infinite;
+}
+
+@keyframes badge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes badge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Profile header — клиентский BookingFlow (оставлено для совместимости) */
 .profile-header-card {
   margin-bottom: 18px;
   border-radius: calc(var(--brand-radius) + 2px);

@@ -8,7 +8,6 @@ import { useToast } from '../hooks/useToast'
 import { createService } from '../lib/services'
 import { presetsForType } from '../lib/servicePresets'
 import {
-  updateBusinessMedia,
   updateBusinessName,
   updateBusinessType,
   uploadBusinessImage,
@@ -22,18 +21,16 @@ import {
   fetchBusinessSettings,
   updateBusinessSettings,
   DEFAULT_BUSINESS_SETTINGS,
-  normalizeMediaFrame,
 } from '../lib/settings'
 import { assetUrl } from '../lib/assets'
 import { haptic } from '../hooks/useTelegramChrome'
 import BrandColorCard from '../components/master/BrandColorCard'
 import CategoryPicker from '../components/CategoryPicker'
 import SearchTagsEditor from '../components/SearchTagsEditor'
-import { canUseBrand, isProPlan, portfolioMax, canAddPortfolioItem, getProPriceLabel } from '../lib/pro'
+import { isProPlan, portfolioMax, canAddPortfolioItem, getProPriceLabel } from '../lib/pro'
 import ProPanel from './ProPanel'
 import SettingsHub from '../components/master/SettingsHub'
 import InviteColleagueCard from '../components/master/InviteColleagueCard'
-import MediaCropSheet from '../components/MediaCropSheet'
 
 const SECTION_TITLE = {
   profile: 'Профиль',
@@ -84,7 +81,6 @@ export default function MasterProfile({
   const [portfolio, setPortfolio] = useState([])
   const [portfolioBusy, setPortfolioBusy] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
-  const [crop, setCrop] = useState(null)
 
   const activeServices = useMemo(
     () => (services || []).filter((s) => s.is_active !== false),
@@ -95,7 +91,6 @@ export default function MasterProfile({
   const existingTitles = new Set(
     activeServices.map((s) => String(s.title || '').toLowerCase()),
   )
-  const mediaFrame = normalizeMediaFrame(bizSettings.media_frame)
 
   useEffect(() => {
     const next = initialSection === 'media' ? 'profile' : initialSection
@@ -147,31 +142,6 @@ export default function MasterProfile({
     return res
   }
 
-  async function onMediaFramePatch(layerKind, layer) {
-    if (!businessId) return
-    const nextFrame = normalizeMediaFrame({
-      ...mediaFrame,
-      [layerKind]: layer,
-    })
-    setBizSettings((prev) => ({ ...prev, media_frame: nextFrame }))
-    onMediaFrameChange?.(nextFrame)
-    const res = await updateBusinessSettings(businessId, { media_frame: nextFrame })
-    if (!res.ok) {
-      setError(res.error || 'Кадр не сохранился')
-      return
-    }
-    setBizSettings(res.settings)
-    showToast('Кадр сохранён')
-  }
-
-  function openCrop(kind) {
-    const url =
-      kind === 'cover'
-        ? assetUrl(theme.cover_url || 'cover-demo.svg')
-        : assetUrl(theme.logo_url || 'avatar-demo.svg')
-    setCrop({ kind, url })
-  }
-
   useEffect(() => {
     let cancelled = false
     async function loadPortfolio() {
@@ -187,37 +157,6 @@ export default function MasterProfile({
       cancelled = true
     }
   }, [businessId])
-
-  async function onPickFile(kind, file) {
-    if (!file || !businessId) return
-    setBusy(kind)
-    setError('')
-    const up = await uploadBusinessImage({ businessId, file, kind })
-    if (!up.ok) {
-      setBusy('')
-      setError(up.error || 'Не удалось загрузить фото')
-      return
-    }
-    const patch =
-      kind === 'cover' ? { coverUrl: up.url } : { avatarUrl: up.url }
-    const upd = await updateBusinessMedia({
-      businessId,
-      masterId,
-      ...patch,
-    })
-    setBusy('')
-    if (!upd.ok) {
-      setError(upd.error || 'Не сохранилось')
-      return
-    }
-    haptic('success')
-    showToast(kind === 'cover' ? 'Шапка загружена' : 'Ава загружена')
-    onBusinessMediaChange?.()
-    setCrop({
-      kind: kind === 'cover' ? 'cover' : 'avatar',
-      url: up.url,
-    })
-  }
 
   async function onAddPortfolio(files) {
     const list = Array.isArray(files)
@@ -435,66 +374,6 @@ export default function MasterProfile({
 
       {section === 'profile' || section === 'media' ? (
         <div className="space-y-4">
-          <p className="settings-group-title">Фото</p>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="pressable booking-secondary-btn cursor-pointer text-center">
-              {busy === 'avatar' ? 'Загружаю…' : 'Сменить аву'}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  e.target.value = ''
-                  onPickFile('avatar', f)
-                }}
-              />
-            </label>
-            <label className="pressable booking-secondary-btn cursor-pointer text-center">
-              {busy === 'cover' ? 'Загружаю…' : 'Сменить шапку'}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  e.target.value = ''
-                  onPickFile('cover', f)
-                }}
-              />
-            </label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => openCrop('avatar')}
-            >
-              Кадр авы
-            </button>
-            {canUseBrand(bizSettings) ? (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => openCrop('cover')}
-              >
-                Кадр шапки
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => {
-                  onOpenPro?.()
-                  setSection('pro')
-                }}
-              >
-                Кадр шапки · Pro · {getProPriceLabel()}
-              </button>
-            )}
-          </div>
-
           <BrandColorCard
             businessId={businessId}
             masterId={masterId}
@@ -743,24 +622,6 @@ export default function MasterProfile({
       ) : null}
         </>
       )}
-
-      <MediaCropSheet
-        open={!!crop}
-        kind={crop?.kind || 'avatar'}
-        imageUrl={crop?.url || ''}
-        previewCoverUrl={assetUrl(theme.cover_url || 'cover-demo.svg')}
-        previewAvatarUrl={assetUrl(theme.logo_url || 'avatar-demo.svg')}
-        businessName={nameDraft || businessName || 'Заведение'}
-        initialLayer={
-          crop?.kind === 'cover' ? mediaFrame.cover : mediaFrame.avatar
-        }
-        onClose={() => setCrop(null)}
-        onSave={async (layer) => {
-          const kind = crop?.kind || 'avatar'
-          setCrop(null)
-          await onMediaFramePatch(kind, layer)
-        }}
-      />
 
       {lightboxIndex != null ? (
         <PortfolioLightbox
