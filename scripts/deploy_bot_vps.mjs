@@ -104,8 +104,7 @@ async function main() {
     process.exit(1)
   }
   if (!fs.existsSync(ENV_FILE)) {
-    console.error('Нет bot/.env')
-    process.exit(1)
+    console.warn('⚠️  Нет bot/.env локально. Будет использован .env на сервере, если он есть.')
   }
   if (!fs.existsSync(INSTALL_SH)) {
     console.error('Нет scripts/vps_install_bot.sh')
@@ -145,7 +144,11 @@ async function main() {
       'cd /root/telegram-booking && tar -xzf bot-deploy.tgz && rm -f bot-deploy.tgz',
     )
 
-    await upload(conn, ENV_FILE, '/root/telegram-booking/bot/.env', 0o600)
+    if (fs.existsSync(ENV_FILE)) {
+      await upload(conn, ENV_FILE, '/root/telegram-booking/bot/.env', 0o600)
+    } else {
+      console.log('  -> .env не залит, проверяю, что он уже есть на сервере...')
+    }
     await exec(conn, 'mkdir -p /root/telegram-booking/scripts')
     await upload(conn, INSTALL_SH, '/root/telegram-booking/scripts/vps_install_bot.sh', 0o755)
 
