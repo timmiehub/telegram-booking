@@ -7,6 +7,7 @@ import CancelBookingSheet from '../components/CancelBookingSheet'
 import { TextField } from '../components/Fields'
 import {
   cancelClientBooking,
+  hideClientBooking,
   fetchClientMasters,
   fetchClientUpcomingAll,
   fetchClientPastBookings,
@@ -116,6 +117,7 @@ export default function ClientHome({
   const tgId = WebApp.initDataUnsafe?.user?.id ?? null
   const [upcoming, setUpcoming] = useState([])
   const [past, setPast] = useState([])
+  const [pastExpanded, setPastExpanded] = useState(false)
   const [masters, setMasters] = useState([])
   const [loading, setLoading] = useState(true)
   const [pendingId, setPendingId] = useState(null)
@@ -149,6 +151,18 @@ export default function ClientHome({
     setMasters(m)
     setRepeatLast(last)
     setLoading(false)
+  }
+
+  async function onHidePast(id) {
+    setPendingId(id)
+    const result = await hideClientBooking(id, tgId)
+    setPendingId(null)
+    if (!result.ok) {
+      setError(result.error || 'Не удалось скрыть')
+      return
+    }
+    haptic('success')
+    setPast((prev) => prev.filter((b) => b.id !== id))
   }
 
   useEffect(() => {
@@ -360,44 +374,70 @@ export default function ClientHome({
       </section>
 
       {past.length > 0 ? (
-        <section className="list-section mb-6">
-          <h2 className="list-section-title">Прошлые визиты</h2>
-          <ul className="space-y-2">
-            {past.map((b) => (
-              <li
-                key={b.id}
-                className="rounded-[14px] border border-[color-mix(in_srgb,var(--brand-text)_8%,transparent)] bg-[var(--brand-surface)] px-3 py-2.5"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {b.services?.title || 'Услуга'}
-                      {b.businesses?.name ? ` · ${b.businesses.name}` : ''}
-                    </p>
-                    <p className="text-xs text-[var(--brand-muted)]">
-                      {formatDayLabel(new Date(b.starts_at))} ·{' '}
-                      {formatSlotLabel(new Date(b.starts_at))}
-                    </p>
+        <section className="list-section mb-6 past-visits-block">
+          <button
+            type="button"
+            className="past-visits-header pressable"
+            onClick={() => {
+              haptic('light')
+              setPastExpanded((v) => !v)
+            }}
+          >
+            <span className="past-visits-title">Прошлые визиты</span>
+            <span className="past-visits-meta">{past.length}</span>
+            <span className={`past-visits-chevron ${pastExpanded ? 'is-open' : ''}`}>
+              <Icon name="icon-chevron-right" size={18} />
+            </span>
+          </button>
+
+          {pastExpanded ? (
+            <ul className="space-y-2 past-visits-list">
+              {past.map((b) => (
+                <li
+                  key={b.id}
+                  className="rounded-[14px] border border-[color-mix(in_srgb,var(--brand-text)_8%,transparent)] bg-[var(--brand-surface)] px-3 py-2.5 past-visit-row"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {b.services?.title || 'Услуга'}
+                        {b.businesses?.name ? ` · ${b.businesses.name}` : ''}
+                      </p>
+                      <p className="text-xs text-[var(--brand-muted)]">
+                        {formatDayLabel(new Date(b.starts_at))} ·{' '}
+                        {formatSlotLabel(new Date(b.starts_at))}
+                      </p>
+                    </div>
+                    <div className="past-visit-actions">
+                      {b.businesses?.slug ? (
+                        <button
+                          type="button"
+                          className="past-visit-action past-visit-action--primary"
+                          onClick={() => {
+                            haptic('light')
+                            onBookBusiness?.(b.businesses.slug, {
+                              serviceId: b.service_id,
+                              masterId: b.master_id,
+                            })
+                          }}
+                        >
+                          Снова
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="past-visit-action"
+                        disabled={pendingId === b.id}
+                        onClick={() => onHidePast(b.id)}
+                      >
+                        {pendingId === b.id ? '…' : 'Скрыть'}
+                      </button>
+                    </div>
                   </div>
-                  {b.businesses?.slug ? (
-                    <button
-                      type="button"
-                      className="shrink-0 text-xs font-semibold text-[var(--brand-primary)]"
-                      onClick={() => {
-                        haptic('light')
-                        onBookBusiness?.(b.businesses.slug, {
-                          serviceId: b.service_id,
-                          masterId: b.master_id,
-                        })
-                      }}
-                    >
-                      Снова
-                    </button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </section>
       ) : null}
 
