@@ -231,12 +231,29 @@ html.has-main-button .app-shell,
   overflow: hidden;
 }
 
+/* Плавный блюр-переход снизу cover к фону экрана */
+.masthead-cover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--brand-bg) 35%, transparent) 40%,
+    var(--brand-bg) 100%
+  );
+  pointer-events: none;
+}
+
 .masthead-body {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   padding: 0 16px 12px;
-  margin-top: -42px;
+  margin-top: -38px;
   position: relative;
   z-index: 2;
 }
