@@ -9,7 +9,7 @@ export const FEATURE_STORIES = [
   {
     id: 'client',
     label: 'Клиенту',
-    ringImage: 'stories/ring-client.webp',
+    ringImage: 'stories/ring-client.svg',
     accent: 'client',
     slides: [
       {
@@ -49,7 +49,7 @@ export const FEATURE_STORIES = [
   {
     id: 'master',
     label: 'Мастеру',
-    ringImage: 'stories/ring-master.webp',
+    ringImage: 'stories/ring-master.svg',
     accent: 'master',
     slides: [
       {
@@ -81,7 +81,7 @@ export const FEATURE_STORIES = [
   {
     id: 'pro',
     label: 'Pro',
-    ringImage: 'stories/ring-pro.webp',
+    ringImage: 'stories/ring-pro.svg',
     accent: 'pro',
     slides: [
       {
