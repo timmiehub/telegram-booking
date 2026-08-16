@@ -3,7 +3,6 @@ import { updateBusinessThemeColors } from '../../lib/business'
 import { applyThemeToDocument } from '../../lib/theme'
 import { accentFromPrimary } from '../../lib/settings'
 import { canUseBrand, getProPriceLabel } from '../../lib/pro'
-import { assetUrl } from '../../lib/assets'
 import { haptic } from '../../hooks/useTelegramChrome'
 
 /**
@@ -98,7 +97,14 @@ export default function BrandColorCard({
         className={`pro-color-field ${!pro ? 'is-locked' : ''}`}
         onClick={!pro ? onLockedClick : undefined}
       >
-        <span>Цвет кнопки</span>
+        <div className="pro-color-field-head">
+          <span>Выбрать цвет</span>
+          {!pro ? (
+            <span className="brand-color-lock" aria-hidden>
+              Pro
+            </span>
+          ) : null}
+        </div>
         <input
           type="color"
           value={primary}
@@ -129,14 +135,6 @@ export default function BrandColorCard({
             : undefined
         }
       >
-        <div
-          className="pro-brand-preview-cover"
-          style={{
-            backgroundImage: `url(${assetUrl(theme?.cover_url || 'cover-demo.svg')})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
         <div className="pro-brand-preview-body">
           <p>Так видит клиент</p>
           <button
@@ -146,9 +144,6 @@ export default function BrandColorCard({
             style={!pro ? undefined : { background: primary }}
           >
             Записаться
-          </button>
-          <button type="button" className="btn btn-secondary w-full" disabled>
-            Поделиться
           </button>
         </div>
         {!pro ? (

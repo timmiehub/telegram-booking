@@ -534,14 +534,21 @@ html.has-main-button .app-shell,
 .pro-color-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding: 12px;
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--brand-text) 8%, transparent);
   background: var(--brand-surface);
 }
 
-.pro-color-field span {
+.pro-color-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pro-color-field-head span:first-child {
   font-size: 12px;
   font-weight: 600;
   color: var(--brand-muted);
@@ -607,13 +614,8 @@ html.has-main-button .app-shell,
   border: 1px solid color-mix(in srgb, var(--brand-text) 12%, transparent);
 }
 
-.pro-brand-preview-cover {
-  height: 72px;
-  background: color-mix(in srgb, var(--brand-primary) 35%, var(--brand-surface-2));
-}
-
 .pro-brand-preview-body {
-  padding: 12px 14px 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
