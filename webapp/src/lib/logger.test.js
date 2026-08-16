@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import logger from './logger.js'
 
 describe('Logger', () => {
-  const originalConsole = { ...console }
-
   beforeEach(() => {
     // Мокаем console методы
     vi.spyOn(console, 'log').mockImplementation(() => {})

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"No tests yet for bot\"",
+    "lint": "oxlint",
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
@@ -19,5 +20,8 @@
     "ssh2": "^1.17.0",
     "telegraf": "^4.16.3",
     "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "oxlint": "^1.78.0"
   }
 }

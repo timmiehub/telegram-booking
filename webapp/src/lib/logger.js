@@ -10,7 +10,7 @@ const levels = {
   debug: 'debug',
 }
 
-function formatMessage(level, message, ...args) {
+function formatMessage(level, message) {
   const timestamp = new Date().toISOString()
   const prefix = `[${timestamp}] [${level.toUpperCase()}]`
   return `${prefix} ${message}`
