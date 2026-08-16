@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <circle cx="64" cy="64" r="52" fill="#1c222c"/>
-  <circle cx="52" cy="58" r="14" fill="#2aabee" opacity="0.25"/>
-  <circle cx="52" cy="54" r="8" fill="#2aabee" opacity="0.5"/>
-  <path d="M36 88c2-10 10-16 16-16s14 6 16 16" stroke="#2aabee" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-  <circle cx="80" cy="58" r="14" fill="#f5c542" opacity="0.2"/>
-  <circle cx="80" cy="54" r="8" fill="#f5c542" opacity="0.45"/>
-  <path d="M64 88c2-10 10-16 16-16s14 6 16 16" stroke="#f5c542" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+  <circle cx="52" cy="58" r="14" fill="#a8425a" opacity="0.25"/>
+  <circle cx="52" cy="54" r="8" fill="#a8425a" opacity="0.5"/>
+  <path d="M36 88c2-10 10-16 16-16s14 6 16 16" stroke="#a8425a" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <circle cx="80" cy="58" r="14" fill="#c9a15a" opacity="0.2"/>
+  <circle cx="80" cy="54" r="8" fill="#c9a15a" opacity="0.45"/>
+  <path d="M64 88c2-10 10-16 16-16s14 6 16 16" stroke="#c9a15a" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
   <path d="M58 72c4 4 8 4 12 0" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
 </svg>
