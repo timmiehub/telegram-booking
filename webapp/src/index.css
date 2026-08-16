@@ -323,14 +323,19 @@ html.has-main-button .app-shell,
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background 0.2s ease;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--brand-text);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, background 0.2s ease;
 }
 
 .masthead-badge--cover:hover {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 1);
+}
+
+.masthead-badge--cover:active {
+  transform: scale(0.93);
 }
 
 .masthead-badge--avatar {
