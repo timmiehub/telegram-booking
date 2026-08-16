@@ -1,14 +1,14 @@
 import { assetUrl } from './assets'
 
-/** Тема по умолчанию — тёплый акцент вместо дефолтного телеграм-синего */
+/** Тема по умолчанию — глубокий бордовый вместо дефолтного телеграм-синего */
 export const DEFAULT_THEME = {
-  primary_color: '#cf9a4a',
+  primary_color: '#a8425a',
   secondary_color: '#e8eaed',
-  accent_color: '#5fa98f',
+  accent_color: '#c9a15a',
   background_color: '#0c1016',
   surface_color: '#151b24',
   text_color: '#f4f6f8',
-  button_text_color: '#1c1408',
+  button_text_color: '#fdf3f0',
   button_style: 'solid',
   border_radius_px: 14,
   font_family:

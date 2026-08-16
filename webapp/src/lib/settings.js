@@ -87,15 +87,15 @@ export function mediaFrameStyle(frame) {
 
 /** Accent from button primary — soft gold mix, no manual picker */
 export function accentFromPrimary(primary) {
-  const p = String(primary || '#cf9a4a').trim()
-  if (!/^#[0-9a-fA-F]{6}$/.test(p)) return '#e8b84a'
+  const p = String(primary || '#a8425a').trim()
+  if (!/^#[0-9a-fA-F]{6}$/.test(p)) return '#c9a15a'
   const r = parseInt(p.slice(1, 3), 16)
   const g = parseInt(p.slice(3, 5), 16)
   const b = parseInt(p.slice(5, 7), 16)
   const mix = (c, t, a = 0.45) => Math.round(c * (1 - a) + t * a)
-  const nr = mix(r, 232)
-  const ng = mix(g, 184)
-  const nb = mix(b, 74)
+  const nr = mix(r, 201)
+  const ng = mix(g, 161)
+  const nb = mix(b, 90)
   return `#${[nr, ng, nb].map((n) => n.toString(16).padStart(2, '0')).join('')}`
 }
 
