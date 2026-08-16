@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import logger from './lib/logger'
 import { applyThemeToDocument, buttonClassName, DEFAULT_THEME } from './lib/theme'
 import { fetchBusinessBundle, resolveBusinessSlug, resolveTeamInviteCode } from './lib/business'
 import { resolveInviteFromContext } from './lib/inviteLinks'
@@ -60,7 +61,7 @@ function initTelegramSdkSafely() {
       )
     }
   } catch (err) {
-    console.warn('Telegram SDK недоступен (это нормально в браузере):', err)
+    logger.warn('Telegram SDK недоступен (это нормально в браузере):', err)
   }
 }
 
@@ -374,14 +375,14 @@ function App() {
                 BOOT_MS,
               )
               nextProfile = ensured.profile
-              if (ensured.error) console.warn('profile:', ensured.error)
+              if (ensured.error) logger.warn('profile:', ensured.error)
               if (nextProfile) {
                 const knownSlug = slug || null
                 if (knownSlug) {
                   const [mems, bizLoaded] = await Promise.all([
                     withTimeout(fetchMemberships(nextProfile.id), BOOT_MS),
                     withTimeout(loadBusiness(knownSlug), BOOT_MS).catch((err) => {
-                      console.warn('loadBusiness boot parallel:', err?.message || err)
+                      logger.warn('loadBusiness boot parallel:', err?.message || err)
                       return null
                     }),
                   ])
@@ -395,7 +396,7 @@ function App() {
                 }
               }
             } catch (err) {
-              console.warn('profile/memberships boot:', err?.message || err)
+              logger.warn('profile/memberships boot:', err?.message || err)
             }
           }
         } else if (!cancelled) {
@@ -422,7 +423,7 @@ function App() {
             loaded = await withTimeout(loadBusiness(loadSlug), BOOT_MS)
           }
         } catch (err) {
-          console.warn('loadBusiness boot:', err?.message || err)
+          logger.warn('loadBusiness boot:', err?.message || err)
           applyThemeToDocument(DEFAULT_THEME)
           setTheme(DEFAULT_THEME)
         }
@@ -474,7 +475,7 @@ function App() {
           refreshAnalytics(loaded.defaultMaster)
         }
       } catch (err) {
-        console.error('Ошибка инициализации Mini App:', err)
+        logger.error('Ошибка инициализации Mini App:', err)
         if (cancelled) return
         applyThemeToDocument(DEFAULT_THEME)
         setTheme(DEFAULT_THEME)

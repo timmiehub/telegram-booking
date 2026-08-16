@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import logger from './logger.js'
 import { Telegraf, Markup } from 'telegraf'
 import { startReminderJobs, confirmBookingFromCallback, masterRespondBookingFromCallback } from './reminders.js'
 import { startDataRetentionJobs } from './dataRetention.js'
@@ -62,7 +63,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN
 const WEBAPP_URL = process.env.WEBAPP_URL || ''
 
 if (!BOT_TOKEN) {
-  console.error('Ошибка: не задан BOT_TOKEN в файле .env')
+  logger.error('Ошибка: не задан BOT_TOKEN в файле .env')
   process.exit(1)
 }
 
@@ -132,7 +133,7 @@ async function ensureBotProfile(from) {
     .select('id, telegram_id, role, slug')
     .single()
   if (error) {
-    console.warn('ensureBotProfile:', error.message)
+    logger.warn('ensureBotProfile:', error.message)
     return null
   }
   return data
@@ -163,7 +164,7 @@ async function userHasCabinet(telegramId) {
 
 const webAppReady = isValidWebAppUrl(WEBAPP_URL)
 if (!webAppReady) {
-  console.warn('WEBAPP_URL ещё не готов — кнопки Mini App будут текстовыми.')
+  logger.warn('WEBAPP_URL ещё не готов — кнопки Mini App будут текстовыми.')
 }
 
 const bot = new Telegraf(BOT_TOKEN, {
@@ -389,7 +390,7 @@ async function replyOpenApp(ctx, buttonLabel, url) {
 
 bot.start(async (ctx) => {
   const name = ctx.from?.first_name ?? 'друг'
-  console.log('Получен /start от', name, ctx.from?.id)
+  logger.info('Получен /start от', name, ctx.from?.id)
   await ensureBotProfile(ctx.from)
 
   const payload = String(ctx.startPayload || '').trim()
@@ -1413,19 +1414,19 @@ bot.action(/^mdecline:(.+)$/, async (ctx) => {
   )
 })
 
-console.log('Проверяю токен через Telegram API…')
+logger.info('Проверяю токен через Telegram API…')
 
 try {
   const me = await bot.telegram.getMe()
-  console.log('Токен OK. Бот:', me.username ? `@${me.username}` : me.id)
+  logger.info('Токен OK. Бот:', me.username ? `@${me.username}` : me.id)
   // НЕ await: launch в Telegraf 4 ждёт polling-loop вечно
   bot
     .launch({ dropPendingUpdates: true })
     .catch((err) => {
-      console.error('[ANTIBAN] polling упал:', err?.message || err)
+      logger.error('[ANTIBAN] polling упал:', err?.message || err)
       process.exit(1)
     })
-  console.log('Бот запущен. Ожидаю сообщения…')
+  logger.info('Бот запущен. Ожидаю сообщения…')
   startReminderJobs(bot)
   startDataRetentionJobs()
   startWeeklyProPushJobs()
@@ -1444,12 +1445,12 @@ try {
       subscriptionIdFilter: tributeSubFilter,
     })
   } else {
-    console.log(
+    logger.info(
       'Tribute Pro: постоянный webhook → https://jwmequerozztzpzisusa.supabase.co/functions/v1/tribute-webhook',
     )
   }
 } catch (err) {
-  console.error('Не удалось запустить бота:', err)
+  logger.error('Не удалось запустить бота:', err)
   process.exit(1)
 }
 

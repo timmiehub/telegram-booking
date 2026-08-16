@@ -9,6 +9,7 @@ webapp/dist/
 bot/.bot.pid
 bot/.chat-roles.json
 bot/.vps.local
+bot/logs/
 *.log
 .DS_Store
 .vite/
