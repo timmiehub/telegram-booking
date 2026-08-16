@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import TimeWheel from './TimeWheel'
 import {
   CALENDAR_PRESETS,
   calendarMonthGrid,
@@ -141,113 +142,127 @@ export default function WorkCalendar({ schedule, onChange, compact = false }) {
         Выбрано дней: {workingCount}
       </p>
 
-      <label className="field-block">
-        <span className="meta-label">Перерыв после услуги (мин)</span>
-        <select
-          className="field"
-          value={normalized.default.buffer_min ?? 10}
-          onChange={(e) => onChange?.(setDefaultBuffer(normalized, e.target.value))}
-        >
-          {BUFFER_OPTIONS.map((m) => (
-            <option key={m} value={m}>
-              {m === 0 ? 'Без перерыва' : `${m} мин`}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <button
-        type="button"
-        className={`slot-align-card pressable ${normalized.default.whole_hours ? 'is-on' : ''}`}
-        role="switch"
-        aria-checked={Boolean(normalized.default.whole_hours)}
-        onClick={() => {
-          haptic('light')
-          onChange?.(setWholeHours(normalized, !normalized.default.whole_hours))
-        }}
-      >
-        <div className="slot-align-copy">
-          <span className="slot-align-title">Только целые часы</span>
-          <span className="slot-align-hint">
-            Клиенты записываются на 16:00, 17:00… без получаса — удобно, если сессия + перерыв = час
+      <div className="calendar-section calendar-section--time">
+        <div className="calendar-section-head">
+          <span className="calendar-section-title">
+            {editKey ? `Часы · ${editKey}` : 'Часы по умолчанию'}
           </span>
-          <span className="slot-align-examples" aria-hidden="true">
-            {(normalized.default.whole_hours
-              ? ['16:00', '17:00', '18:00']
-              : ['16:00', '16:30', '17:00']
-            ).map((t) => (
-              <span key={t} className="slot-align-chip">
-                {t}
-              </span>
-            ))}
-          </span>
+          {editKey ? (
+            <button
+              type="button"
+              className="calendar-section-reset"
+              onClick={() => onDayClick(new Date(editKey))}
+            >
+              Сбросить
+            </button>
+          ) : null}
         </div>
-        <span className="slot-align-switch" aria-hidden="true">
-          <span className="slot-align-knob" />
-        </span>
-      </button>
 
-      <div className="calendar-hours-row">
-        <label className="field-block">
-          <span className="meta-label">
-            {editKey ? `Начало · ${editKey}` : 'Начало (по умолчанию)'}
-          </span>
-          <input
-            type="time"
-            className="field"
-            value={(editEntry || normalized.default).start}
-            onChange={(e) => {
-              if (editKey) {
-                const entry = getDayEntry(normalized, new Date(editKey)) || normalized.default
-                onChange?.(
-                  setDayHours(
-                    normalized,
-                    new Date(editKey),
-                    e.target.value,
-                    entry.end || normalized.default.end,
-                  ),
-                )
-              } else {
-                onChange?.(setDefaultHours(normalized, e.target.value, normalized.default.end))
-              }
-            }}
-          />
-        </label>
-        <label className="field-block">
-          <span className="meta-label">
-            {editKey ? 'Конец на день' : 'Конец (по умолчанию)'}
-          </span>
-          <input
-            type="time"
-            className="field"
-            value={(editEntry || normalized.default).end}
-            onChange={(e) => {
-              if (editKey) {
-                const entry = getDayEntry(normalized, new Date(editKey)) || normalized.default
-                onChange?.(
-                  setDayHours(
-                    normalized,
-                    new Date(editKey),
-                    entry.start || normalized.default.start,
-                    e.target.value,
-                  ),
-                )
-              } else {
-                onChange?.(setDefaultHours(normalized, normalized.default.start, e.target.value))
-              }
-            }}
-          />
-        </label>
+        <div className="calendar-hours-pair">
+          <div className="calendar-hours-column">
+            <span className="calendar-hours-label">Начало</span>
+            <TimeWheel
+              value={(editEntry || normalized.default).start}
+              onChange={(v) => {
+                if (editKey) {
+                  const entry = getDayEntry(normalized, new Date(editKey)) || normalized.default
+                  onChange?.(
+                    setDayHours(
+                      normalized,
+                      new Date(editKey),
+                      v,
+                      entry.end || normalized.default.end,
+                    ),
+                  )
+                } else {
+                  onChange?.(setDefaultHours(normalized, v, normalized.default.end))
+                }
+              }}
+            />
+          </div>
+          <div className="calendar-hours-column">
+            <span className="calendar-hours-label">Конец</span>
+            <TimeWheel
+              value={(editEntry || normalized.default).end}
+              onChange={(v) => {
+                if (editKey) {
+                  const entry = getDayEntry(normalized, new Date(editKey)) || normalized.default
+                  onChange?.(
+                    setDayHours(
+                      normalized,
+                      new Date(editKey),
+                      entry.start || normalized.default.start,
+                      v,
+                    ),
+                  )
+                } else {
+                  onChange?.(setDefaultHours(normalized, normalized.default.start, v))
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        {editKey ? (
+          <p className="calendar-hint">
+            Редактируете часы для {editKey}. Нажмите «Сбросить», чтобы вернуть значение по умолчанию.
+          </p>
+        ) : (
+          <p className="calendar-hint">
+            Выберите день в календаре, чтобы задать индивидуальное время.
+          </p>
+        )}
       </div>
-      {editKey ? (
-        <p className="text-xs text-[var(--brand-muted)]">
-          Редактируете часы для {editKey}. Ещё раз нажмите день в календаре, чтобы выключить.
-        </p>
-      ) : (
-        <p className="text-xs text-[var(--brand-muted)]">
-          Часы для всех отмеченных дней. Выберите день в календаре, чтобы задать своё время.
-        </p>
-      )}
+
+      <div className="calendar-section calendar-section--slots">
+        <span className="calendar-section-title">Точность записи</span>
+
+        <label className="field-block">
+          <span className="meta-label">Перерыв после услуги</span>
+          <select
+            className="field"
+            value={normalized.default.buffer_min ?? 10}
+            onChange={(e) => onChange?.(setDefaultBuffer(normalized, e.target.value))}
+          >
+            {BUFFER_OPTIONS.map((m) => (
+              <option key={m} value={m}>
+                {m === 0 ? 'Без перерыва' : `${m} мин`}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          type="button"
+          className={`slot-align-card pressable ${normalized.default.whole_hours ? 'is-on' : ''}`}
+          role="switch"
+          aria-checked={Boolean(normalized.default.whole_hours)}
+          onClick={() => {
+            haptic('light')
+            onChange?.(setWholeHours(normalized, !normalized.default.whole_hours))
+          }}
+        >
+          <div className="slot-align-copy">
+            <span className="slot-align-title">Только целые часы</span>
+            <span className="slot-align-hint">
+              Клиенты записываются на 16:00, 17:00… без получаса — удобно, если сессия + перерыв = час
+            </span>
+            <span className="slot-align-examples" aria-hidden="true">
+              {(normalized.default.whole_hours
+                ? ['16:00', '17:00', '18:00']
+                : ['16:00', '16:30', '17:00']
+              ).map((t) => (
+                <span key={t} className="slot-align-chip">
+                  {t}
+                </span>
+              ))}
+            </span>
+          </div>
+          <span className="slot-align-switch" aria-hidden="true">
+            <span className="slot-align-knob" />
+          </span>
+        </button>
+      </div>
     </div>
   )
 }

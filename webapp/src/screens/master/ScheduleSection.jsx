@@ -1,5 +1,6 @@
 import WorkCalendar from '../../components/WorkCalendar'
 import { NumberField } from '../../components/Fields'
+import { haptic } from '../../hooks/useTelegramChrome'
 
 export default function ScheduleSection({
   schedule,
@@ -11,10 +12,15 @@ export default function ScheduleSection({
   onSaveBizSettings,
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 schedule-tab-body">
       <WorkCalendar schedule={schedule} onChange={setSchedule} />
-      <div className="card px-4 py-3 space-y-3">
-        <p className="text-sm font-semibold">Правила для клиентов</p>
+
+      <div className="card schedule-rules-card">
+        <div className="schedule-rules-head">
+          <span className="schedule-rules-title">Правила для клиентов</span>
+          <span className="schedule-rules-sub">Когда можно отменить или подтвердить визит</span>
+        </div>
+
         <NumberField
           label="Перенос/отмена не позже (часов)"
           value={bizSettings.reschedule_min_hours}
@@ -37,16 +43,26 @@ export default function ScheduleSection({
             }
           }}
         />
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={bizSettings.require_confirm}
-            onChange={(e) =>
-              setBizSettings((s) => ({ ...s, require_confirm: e.target.checked }))
-            }
-          />
-          Просить подтверждение визита за сутки (кнопка в боте)
-        </label>
+
+        <button
+          type="button"
+          className={`schedule-confirm-toggle ${bizSettings.require_confirm ? 'is-on' : ''}`}
+          role="switch"
+          aria-checked={Boolean(bizSettings.require_confirm)}
+          onClick={() => {
+            haptic('light')
+            setBizSettings((s) => ({ ...s, require_confirm: !s.require_confirm }))
+          }}
+        >
+          <span className="schedule-confirm-copy">
+            <span className="schedule-confirm-title">Подтверждение за сутки</span>
+            <span className="schedule-confirm-hint">Кнопка в боте перед визитом</span>
+          </span>
+          <span className="schedule-confirm-switch" aria-hidden="true">
+            <span className="schedule-confirm-knob" />
+          </span>
+        </button>
+
         <button
           type="button"
           className="btn btn-secondary w-full"
@@ -65,6 +81,7 @@ export default function ScheduleSection({
           {busy === 'settings' ? 'Сохраняю…' : 'Сохранить правила'}
         </button>
       </div>
+
       <button
         type="button"
         className="pressable btn btn-primary w-full"
