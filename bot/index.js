@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import fs from 'fs'
 import logger from './logger.js'
 import { Telegraf, Markup } from 'telegraf'
 import { startReminderJobs, confirmBookingFromCallback, masterRespondBookingFromCallback } from './reminders.js'
@@ -82,10 +83,20 @@ function isValidWebAppUrl(url) {
   }
 }
 
+const cacheBustFile = new URL('./cache-bust.txt', import.meta.url)
+
+function getCacheBust() {
+  try {
+    return fs.readFileSync(cacheBustFile, 'utf8').trim() || '2'
+  } catch {
+    return '2'
+  }
+}
+
 function withParams(extra = {}, { bare = false } = {}) {
   try {
     const u = new URL(WEBAPP_URL)
-    u.searchParams.set('v', '2')
+    u.searchParams.set('v', getCacheBust())
     if (bare) {
       u.searchParams.delete('business')
       u.searchParams.delete('master')
