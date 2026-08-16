@@ -8,7 +8,7 @@ export default function ProBadge({ className = '', compact = false, label = 'Pro
       title="Pro"
     >
       <img
-        src={assetUrl('pro-mark.png')}
+        src={assetUrl('pro-mark.svg')}
         alt=""
         width={compact ? 12 : 14}
         height={compact ? 12 : 14}

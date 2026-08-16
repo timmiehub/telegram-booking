@@ -52,7 +52,7 @@ export default function QuietStats({ masterId, businessId = null }) {
     <div className="fade-up space-y-3">
       <div className="quiet-stats-head">
         <img
-          src={assetUrl('stats-spark.png')}
+          src={assetUrl('stats-spark.svg')}
           alt=""
           width={40}
           height={40}

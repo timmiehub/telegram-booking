@@ -269,7 +269,7 @@ export default function ProPanel({
         <div className="pro-upsell pro-upsell--active pro-stagger-1">
           <div className="pro-upsell-inner">
             <span className="pro-badge pro-badge--hero">
-              <img src={assetUrl('pro-mark.png')} alt="" width={14} height={14} className="pro-badge-mark" />
+              <img src={assetUrl('pro-mark.svg')} alt="" width={14} height={14} className="pro-badge-mark" />
               {proStatusLabel}
             </span>
             {proUntilLabel && !isLifetimePro ? (

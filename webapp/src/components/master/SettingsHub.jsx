@@ -65,7 +65,7 @@ export default function SettingsHub({
             >
               {c.id === 'pro' ? (
                 <img
-                  src={assetUrl('pro-mark.png')}
+                  src={assetUrl('pro-mark.svg')}
                   alt=""
                   width={22}
                   height={22}

@@ -3672,7 +3672,7 @@ input.field:-webkit-autofill:focus {
   display: grid;
   place-items: center;
   padding: 20px 16px;
-  background: rgba(15, 23, 42, 0.48);
+  background: rgba(0, 0, 0, 0.55);
   animation: pro-gift-fade 0.35s ease;
 }
 
@@ -3680,9 +3680,10 @@ input.field:-webkit-autofill:focus {
   width: min(100%, 360px);
   border-radius: 22px;
   padding: 28px 22px 22px;
-  background: #fff;
-  color: #0f172a;
-  box-shadow: 0 24px 60px rgba(2, 8, 23, 0.35);
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  border: 1px solid color-mix(in srgb, var(--brand-text) 8%, transparent);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   position: relative;
   overflow: hidden;
   animation: pro-gift-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -3693,7 +3694,7 @@ input.field:-webkit-autofill:focus {
   position: absolute;
   inset: 0 0 auto 0;
   height: 4px;
-  background: linear-gradient(90deg, #c9a227, #0ea5e9, #c9a227);
+  background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent), var(--brand-primary));
 }
 
 .pro-gift-badge {
@@ -3703,9 +3704,9 @@ input.field:-webkit-autofill:focus {
   border-radius: 20px;
   display: grid;
   place-items: center;
-  color: #c9a227;
-  background: linear-gradient(145deg, #f5e6b8, #fff8e7);
-  box-shadow: 0 10px 24px rgba(201, 162, 39, 0.28);
+  color: var(--brand-accent);
+  background: color-mix(in srgb, var(--brand-accent) 18%, var(--brand-surface-2));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand-accent) 28%, transparent);
   animation: pro-gift-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 }
 
@@ -3716,12 +3717,13 @@ input.field:-webkit-autofill:focus {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #c9a227;
+  color: var(--brand-accent);
 }
 
 .pro-gift-title {
   margin: 0 0 10px;
   text-align: center;
+  font-family: var(--brand-display);
   font-size: 22px;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -3731,7 +3733,7 @@ input.field:-webkit-autofill:focus {
 .pro-gift-body {
   margin: 0;
   text-align: center;
-  color: #64748b;
+  color: var(--brand-muted);
   font-size: 15px;
   line-height: 1.45;
   white-space: pre-line;
@@ -3742,8 +3744,8 @@ input.field:-webkit-autofill:focus {
   width: fit-content;
   padding: 8px 14px;
   border-radius: 999px;
-  background: color-mix(in srgb, #0ea5e9 12%, white);
-  color: #0284c7;
+  background: color-mix(in srgb, var(--brand-primary) 16%, transparent);
+  color: var(--brand-primary);
   font-size: 13px;
   font-weight: 700;
 }
@@ -3751,13 +3753,13 @@ input.field:-webkit-autofill:focus {
 .pro-gift-tg {
   margin-top: 14px;
   width: 100%;
-  border: 1px solid color-mix(in srgb, #0ea5e9 35%, #e2e8f0);
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 32%, transparent);
   border-radius: 14px;
   padding: 13px 16px;
   font-size: 15px;
   font-weight: 700;
-  color: #0284c7;
-  background: color-mix(in srgb, #0ea5e9 8%, white);
+  color: var(--brand-text);
+  background: color-mix(in srgb, var(--brand-primary) 10%, var(--brand-surface-2));
   cursor: pointer;
 }
 
@@ -3773,9 +3775,9 @@ input.field:-webkit-autofill:focus {
   padding: 14px 16px;
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(180deg, #38bdf8, #0284c7);
-  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.28);
+  color: var(--brand-btn-text);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand-primary) 100%, #fff 12%), var(--brand-primary-deep));
+  box-shadow: var(--shadow-btn);
   cursor: pointer;
 }
 

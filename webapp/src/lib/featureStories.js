@@ -90,7 +90,7 @@ export const FEATURE_STORIES = [
         title: 'Больше записей, меньше рутины',
         question: 'Бесплатного кабинета мало, когда хотите расти?',
         answer: 'Pro поднимает вас в поиске и закрывает ежедневную рутину.',
-        image: 'stories/slide-pro-intro.webp',
+        image: 'stories/slide-pro-intro.svg',
       },
       {
         id: 'pro-search',
@@ -98,7 +98,7 @@ export const FEATURE_STORIES = [
         title: 'Выше в поиске',
         question: 'Новые клиенты вас не находят?',
         answer: 'Кабинет выше в поиске по городу — больше записей без рекламы.',
-        image: 'stories/slide-pro-search.webp',
+        image: 'stories/slide-pro-search.svg',
       },
       {
         id: 'pro-ai',
@@ -106,7 +106,7 @@ export const FEATURE_STORIES = [
         title: 'ИИ и тексты по окнам',
         question: 'Однотипные ответы и рассылки отнимают время?',
         answer: 'Черновики по свободным слотам и ответы в чате мастера.',
-        image: 'stories/slide-pro-ai.webp',
+        image: 'stories/slide-pro-ai.svg',
       },
       {
         id: 'pro-brand',
@@ -114,7 +114,7 @@ export const FEATURE_STORIES = [
         title: 'Свой бренд в кабинете',
         question: 'Кабинет выглядит как у всех?',
         answer: 'Цвет кнопки и кадр шапки — кабинет под ваш стиль.',
-        image: 'stories/slide-pro-brand.webp',
+        image: 'stories/slide-pro-brand.svg',
       },
       {
         id: 'pro-winback',
@@ -122,7 +122,7 @@ export const FEATURE_STORIES = [
         title: 'Возврат и цифры',
         question: 'Не видно, кто пропал и как идёт месяц?',
         answer: 'Кто давно не был — текст «написать». Неделя в кабинете и отчёт в Telegram.',
-        image: 'stories/slide-pro-winback.webp',
+        image: 'stories/slide-pro-winback.svg',
       },
       {
         id: 'pro-tools',
@@ -130,7 +130,7 @@ export const FEATURE_STORIES = [
         title: 'Инструменты на каждый день',
         question: 'Нужны чёрный список, свои тексты и несколько адресов?',
         answer: 'Всё это в Pro. Подробности — в кабинете после входа.',
-        image: 'stories/slide-pro-tools.webp',
+        image: 'stories/slide-pro-tools.svg',
       },
     ],
   },
