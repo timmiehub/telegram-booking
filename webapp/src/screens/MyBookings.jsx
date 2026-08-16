@@ -108,7 +108,7 @@ export default function MyBookings({
   const cancelPolicy = cancelRow ? bookingModifyPolicy(cancelRow) : null
 
   return (
-    <section className="stagger">
+    <section className="stagger" data-build="v3">
       <button
         type="button"
         className="mb-3 text-sm text-[var(--brand-muted)]"
