@@ -309,9 +309,10 @@ export async function fetchClientPastBookings(clientTelegramId, limit = 10) {
   const { data, error } = await supabase
     .from('bookings')
     .select(
-      'id, starts_at, status, master_id, business_id, service_id, services(id, title, duration_min, price_cents, currency), businesses(slug, name)',
+      'id, starts_at, status, master_id, business_id, service_id, hidden_by_client, services(id, title, duration_min, price_cents, currency), businesses(slug, name)',
     )
     .eq('client_telegram_id', clientTelegramId)
+    .eq('hidden_by_client', false)
     .lt('starts_at', now.toISOString())
     .gte('starts_at', since.toISOString())
     .in('status', ['completed', 'confirmed', 'no_show', 'cancelled_by_client', 'cancelled_by_master'])
@@ -323,6 +324,21 @@ export async function fetchClientPastBookings(clientTelegramId, limit = 10) {
     return []
   }
   return data ?? []
+}
+
+export async function hideClientBooking(id, clientTelegramId = null) {
+  if (!id || !supabase) return { ok: false, error: 'Нет id' }
+
+  let query = supabase
+    .from('bookings')
+    .update({ hidden_by_client: true })
+    .eq('id', id)
+  if (clientTelegramId) query = query.eq('client_telegram_id', clientTelegramId)
+
+  const { data, error } = await query.select('id').maybeSingle()
+  if (error) return { ok: false, error: error.message }
+  if (!data) return { ok: false, error: 'Запись не найдена' }
+  return { ok: true }
 }
 
 /**

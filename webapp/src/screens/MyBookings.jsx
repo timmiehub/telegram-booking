@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import EmptyState from '../components/EmptyState'
 import ReschedulePanel from '../components/ReschedulePanel'
 import CancelBookingSheet from '../components/CancelBookingSheet'
@@ -6,6 +7,7 @@ import {
   fetchClientBookings,
   cancelClientBooking,
   fetchClientPastBookings,
+  hideClientBooking,
   bookingModifyPolicy,
 } from '../lib/bookings'
 import { formatDayLabel, formatSlotLabel } from '../lib/slots'
@@ -23,6 +25,7 @@ export default function MyBookings({
 }) {
   const [rows, setRows] = useState([])
   const [past, setPast] = useState([])
+  const [pastExpanded, setPastExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingId, setPendingId] = useState(null)
   const [rescheduleId, setRescheduleId] = useState(null)
@@ -37,11 +40,23 @@ export default function MyBookings({
     setLoading(true)
     const [data, history] = await Promise.all([
       fetchClientBookings(masterId, tgId),
-      fetchClientPastBookings(tgId, 5),
+      fetchClientPastBookings(tgId, 50),
     ])
     setRows(data)
     setPast(history.filter((b) => b.master_id === masterId))
     setLoading(false)
+  }
+
+  async function onHidePast(id) {
+    setPendingId(id)
+    const result = await hideClientBooking(id, tgId)
+    setPendingId(null)
+    if (!result.ok) {
+      setError(result.error || 'Не удалось скрыть')
+      return
+    }
+    haptic('success')
+    setPast((prev) => prev.filter((b) => b.id !== id))
   }
 
   useEffect(() => {
@@ -195,33 +210,59 @@ export default function MyBookings({
       )}
 
       {past.length > 0 && !rescheduleId ? (
-        <div className="mt-6">
-          <p className="mb-2 text-sm font-semibold">Были раньше</p>
-          <ul className="tg-list">
-            {past.map((b) => (
-              <li key={b.id} className="tg-row">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{b.services?.title || 'Услуга'}</p>
-                  <p className="text-xs text-[var(--brand-muted)]">
-                    {formatDayLabel(new Date(b.starts_at))}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => {
-                    haptic('light')
-                    onBookAgain?.({
-                      serviceId: b.service_id || b.services?.id,
-                      slug: businessSlug || b.businesses?.slug,
-                    })
-                  }}
-                >
-                  Снова
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-6 past-visits-block">
+          <button
+            type="button"
+            className="past-visits-header pressable"
+            onClick={() => {
+              haptic('light')
+              setPastExpanded((v) => !v)
+            }}
+          >
+            <span className="past-visits-title">Были раньше</span>
+            <span className="past-visits-meta">{past.length}</span>
+            <span className={`past-visits-chevron ${pastExpanded ? 'is-open' : ''}`}>
+              <Icon name="icon-chevron-right" size={18} />
+            </span>
+          </button>
+
+          {pastExpanded ? (
+            <ul className="tg-list past-visits-list">
+              {past.map((b) => (
+                <li key={b.id} className="tg-row past-visit-row">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{b.services?.title || 'Услуга'}</p>
+                    <p className="text-xs text-[var(--brand-muted)]">
+                      {formatDayLabel(new Date(b.starts_at))}
+                    </p>
+                  </div>
+                  <div className="past-visit-actions">
+                    <button
+                      type="button"
+                      className="past-visit-action past-visit-action--primary"
+                      onClick={() => {
+                        haptic('light')
+                        onBookAgain?.({
+                          serviceId: b.service_id || b.services?.id,
+                          slug: businessSlug || b.businesses?.slug,
+                        })
+                      }}
+                    >
+                      Снова
+                    </button>
+                    <button
+                      type="button"
+                      className="past-visit-action"
+                      disabled={pendingId === b.id}
+                      onClick={() => onHidePast(b.id)}
+                    >
+                      {pendingId === b.id ? '…' : 'Скрыть'}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       ) : null}
 

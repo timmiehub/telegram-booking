@@ -108,6 +108,7 @@ create table public.bookings (
   reminded_24h boolean not null default false,
   reminded_2h boolean not null default false,
   master_notified boolean not null default false,
+  hidden_by_client boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint bookings_time_check check (ends_at > starts_at)
