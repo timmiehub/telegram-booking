@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import AppShell from '../components/AppShell'
 import { useTelegramChrome, haptic } from '../hooks/useTelegramChrome'
-import { fetchDayBookings } from '../lib/bookings'
 import { fetchBusinessSettings, mediaFrameStyle, updateBusinessSettings } from '../lib/settings'
 import { isProPlan } from '../lib/pro'
 import { fetchCompletedVisitsCount } from '../lib/growthMetrics'
@@ -77,7 +76,6 @@ export default function MasterCabinet({
   )
   /** Сброс экрана «Ещё» на корневое меню при каждом нажатии вкладки. */
   const [moreEpoch, setMoreEpoch] = useState(0)
-  const [visitCount, setVisitCount] = useState(0)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [isPro, setIsPro] = useState(false)
   const [mediaFrame, setMediaFrame] = useState(null)
@@ -122,19 +120,6 @@ export default function MasterCabinet({
       profileInitialSection === 'media' ? 'profile' : profileInitialSection
     setProfileSection(next)
   }, [profileInitialSection])
-
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      if (!masterId) return
-      const rows = await fetchDayBookings(masterId)
-      if (!cancelled) setVisitCount(rows.length)
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [masterId, analytics])
 
   useEffect(() => {
     let cancelled = false
@@ -232,15 +217,11 @@ export default function MasterCabinet({
               {isPro ? <ProBadge compact /> : null}
             </div>
             <p className="mt-1 text-sm text-[var(--brand-muted)]">
-              {tab === 'today'
-                ? visitCount
-                  ? `${visitCount} сегодня`
-                  : 'Нет визитов сегодня'
-                : tab === 'schedule'
-                  ? 'Рабочие дни и часы'
-                  : tab === 'more'
-                    ? moreProgress.label
-                    : categoryLabel(businessType)}
+              {tab === 'schedule'
+                ? 'Рабочие дни и часы'
+                : tab === 'more'
+                  ? moreProgress.label
+                  : categoryLabel(businessType)}
             </p>
           </div>
         </div>
@@ -276,10 +257,7 @@ export default function MasterCabinet({
             isPro={isPro}
             onOpenPro={() => openMore('pro')}
             onOpenHotSlots={() => setTab('link')}
-            onRefreshStats={() => {
-              onRefresh?.()
-              fetchDayBookings(masterId).then((rows) => setVisitCount(rows.length))
-            }}
+            onRefreshStats={() => onRefresh?.()}
           />
         ) : null}
 
@@ -294,9 +272,7 @@ export default function MasterCabinet({
             masterSlug={masterSlug}
             businessName={businessName || theme.business_name}
             businessId={businessId}
-            isPro={isPro}
             onOpenSchedule={() => setTab('schedule')}
-            onOpenPro={() => openMore('pro')}
           />
         ) : null}
 
@@ -375,34 +351,34 @@ export default function MasterCabinet({
               onPlanChange={(settings) => setIsPro(isProPlan(settings))}
               onMediaFrameChange={(frame) => setMediaFrame(frame)}
             />
+
+            <div className="mt-2 space-y-3">
+              <button
+                type="button"
+                className="pressable support-tg-btn"
+                onClick={openSupportChat}
+              >
+                <span className="support-tg-btn-icon" aria-hidden>
+                  <Icon name="icon-chat" size={20} />
+                </span>
+                <span className="min-w-0 flex-1 text-left">
+                  <span className="block text-sm font-semibold">Написать в поддержку</span>
+                  <span className="mt-0.5 block text-xs text-[var(--brand-muted)]">
+                    Баги и вопросы — @{FEEDBACK_TG}
+                  </span>
+                </span>
+                <Icon name="icon-chevron-right" size={18} className="shrink-0 opacity-50" />
+              </button>
+              <button
+                type="button"
+                className="w-full text-center text-sm text-[var(--brand-muted)]"
+                onClick={onBack}
+              >
+                Сменить роль
+              </button>
+            </div>
           </div>
         ) : null}
-      </div>
-
-      <div className="mt-6 space-y-3">
-        <button
-          type="button"
-          className="w-full text-center text-sm text-[var(--brand-muted)]"
-          onClick={onBack}
-        >
-          Сменить роль
-        </button>
-        <button
-          type="button"
-          className="pressable support-tg-btn"
-          onClick={openSupportChat}
-        >
-          <span className="support-tg-btn-icon" aria-hidden>
-            <Icon name="icon-chat" size={20} />
-          </span>
-          <span className="min-w-0 flex-1 text-left">
-            <span className="block text-sm font-semibold">Написать в поддержку</span>
-            <span className="mt-0.5 block text-xs text-[var(--brand-muted)]">
-              Баги и вопросы — @{FEEDBACK_TG}
-            </span>
-          </span>
-          <Icon name="icon-chevron-right" size={18} className="shrink-0 opacity-50" />
-        </button>
       </div>
 
       <ProGrowthNudgeSheet

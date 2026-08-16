@@ -38,6 +38,7 @@ import SearchTagsEditor from '../components/SearchTagsEditor'
 import { canUseBrand, isProPlan, portfolioMax, canAddPortfolioItem, getProPriceLabel } from '../lib/pro'
 import ProPanel from './ProPanel'
 import SettingsHub from '../components/master/SettingsHub'
+import InviteColleagueCard from '../components/master/InviteColleagueCard'
 import ScheduleSection from './master/ScheduleSection'
 import MediaCropSheet from '../components/MediaCropSheet'
 
@@ -47,6 +48,7 @@ const SECTION_TITLE = {
   services: 'Услуги',
   schedule: 'Расписание',
   pro: 'Pro',
+  invite: 'Пригласить коллегу',
 }
 
 export default function MasterProfile({
@@ -791,6 +793,10 @@ export default function MasterProfile({
             onPlanChange?.(settings)
           }}
         />
+      ) : null}
+
+      {section === 'invite' ? (
+        <InviteColleagueCard onToast={showToast} />
       ) : null}
         </>
       )}

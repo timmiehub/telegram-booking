@@ -28,6 +28,9 @@
     <circle cx="12" cy="14" r="1.25" fill="currentColor"/>
     <circle cx="16" cy="14" r="1.25" fill="currentColor"/>
   </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+  </symbol>
   <symbol id="icon-clock" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/>
     <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>

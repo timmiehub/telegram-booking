@@ -5,7 +5,6 @@ import {
   buildShareLine,
   buildShareText,
 } from '../lib/inviteLinks'
-import { buildColleagueInviteLine, buildReferralStartLink } from '../lib/shareCopy'
 import {
   buildDaySlots,
   dayOffset,
@@ -15,17 +14,13 @@ import {
 import { downloadBookingQr } from '../lib/qr'
 import { haptic } from '../hooks/useTelegramChrome'
 import { WebApp } from '../lib/telegram'
-import { getProPriceLabelShort } from '../lib/pro'
 
 export default function HotSlots({
   masterId,
   services = [],
   masterSlug,
   businessName,
-  businessId = null,
-  isPro = false,
   onOpenSchedule,
-  onOpenPro,
 }) {
   const activeServices = useMemo(
     () => services.filter((s) => s.is_active !== false),
@@ -43,9 +38,6 @@ export default function HotSlots({
   const link = buildClientBookingLink(masterSlug)
   const shareText = buildShareText(businessName)
   const shareLine = buildShareLine(businessName, masterSlug)
-  const myTgId = WebApp.initDataUnsafe?.user?.id || null
-  const referralLink = buildReferralStartLink(myTgId)
-  const colleagueLine = buildColleagueInviteLine(myTgId)
 
   useEffect(() => {
     if (!serviceId && activeServices[0]?.id) {
@@ -211,59 +203,6 @@ export default function HotSlots({
           onClick={onQr}
         >
           {busy === 'qr' ? '…' : 'Скачать QR'}
-        </button>
-      </div>
-
-      <div className="card px-4 py-3 space-y-2">
-        <p className="text-sm font-semibold">Пригласить коллегу</p>
-        <p className="text-xs text-[var(--brand-muted)] leading-snug">
-          +14 дней Pro вам, когда коллега подключит Pro. Кабинет для него бесплатный.
-        </p>
-        <button
-          type="button"
-          className="btn btn-secondary w-full"
-          onClick={async () => {
-            haptic('light')
-            try {
-              await navigator.clipboard.writeText(colleagueLine)
-              setToast('Текст для коллеги скопирован')
-              haptic('success')
-            } catch {
-              WebApp.showAlert?.(colleagueLine)
-            }
-          }}
-        >
-          Скопировать приглашение
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost w-full"
-          onClick={async () => {
-            haptic('light')
-            try {
-              await navigator.clipboard.writeText(referralLink)
-              setToast('Реф-ссылка скопирована')
-              haptic('success')
-            } catch {
-              WebApp.showAlert?.(referralLink)
-            }
-          }}
-        >
-          Только ссылка
-        </button>
-      </div>
-
-      <div className="link-growth">
-        <p className="link-growth-label">Рост</p>
-        <button
-          type="button"
-          className="btn btn-ghost w-full"
-          onClick={() => {
-            haptic('light')
-            onOpenPro?.()
-          }}
-        >
-          {isPro ? 'Ассистент и инструменты' : getProPriceLabelShort()}
         </button>
       </div>
     </div>

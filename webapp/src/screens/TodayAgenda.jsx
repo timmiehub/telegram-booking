@@ -215,18 +215,20 @@ export default function TodayAgenda({
             </button>
           )
         })}
-      </div>
 
-      <button
-        type="button"
-        className="btn btn-secondary w-full text-sm"
-        onClick={() => {
-          haptic('light')
-          setExternalOpen(true)
-        }}
-      >
-        + Из YClients / другого сервиса
-      </button>
+        <button
+          type="button"
+          className="pressable day-chip day-chip--calendar"
+          aria-label="Добавить стороннюю запись (YClients и другие)"
+          title="Добавить стороннюю запись"
+          onClick={() => {
+            haptic('light')
+            setExternalOpen(true)
+          }}
+        >
+          <Icon name="icon-plus" size={20} />
+        </button>
+      </div>
 
       <p className="text-sm text-[var(--brand-muted)]">
         {formatDayLabel(selectedDate)}

@@ -32,6 +32,12 @@ const CARDS = [
     hint: () => 'Календарь и правила отмены',
     icon: 'icon-calendar',
   },
+  {
+    id: 'invite',
+    title: 'Пригласить коллегу',
+    hint: () => '+14 дней Pro вам, когда коллега подключит Pro',
+    icon: 'icon-users',
+  },
 ]
 
 export default function SettingsHub({
