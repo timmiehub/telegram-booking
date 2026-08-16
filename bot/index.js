@@ -85,6 +85,7 @@ function isValidWebAppUrl(url) {
 function withParams(extra = {}, { bare = false } = {}) {
   try {
     const u = new URL(WEBAPP_URL)
+    u.searchParams.set('v', '2')
     if (bare) {
       u.searchParams.delete('business')
       u.searchParams.delete('master')
