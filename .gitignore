@@ -15,3 +15,5 @@ bot/logs/
 .vite/
 .vercel/
 .railway/
+__pycache__/
+*.pyc
