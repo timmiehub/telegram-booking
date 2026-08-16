@@ -1,0 +1,22 @@
+# Стабильный деплой Mini App + бот
+#
+# Webapp (уже есть скрипт GitHub Pages — без логина Vercel):
+#   node scripts/deploy_pages.mjs
+#   URL: https://timmiehub.github.io/telegram-booking/?business=demo
+#   Privacy: https://timmiehub.github.io/telegram-booking/privacy-policy.html
+#
+# Альтернатива Vercel (нужен логин):
+#   cd webapp && npx vercel login && npx vercel --prod
+#   или: node scripts/deploy_webapp.mjs
+#
+# Menu Button:
+#   node scripts/set_menu_button.mjs
+#
+# Bot:
+#   Локально: cd bot && npm start
+#   Railway: создать сервис из bot/, env из railway.variables.example
+#            Dockerfile и railway.toml уже в bot/
+#
+# SQL в Supabase (обязательно для ролей/заведений):
+#   supabase/migration_businesses.sql
+#   supabase/migration_master_notify.sql

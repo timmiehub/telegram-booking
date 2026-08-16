@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Превью: подарок Pro</title>
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --paper: #f8fafc;
+      --card: #ffffff;
+      --gold: #c9a227;
+      --gold-soft: #f5e6b8;
+      --sky: #0ea5e9;
+      --sky-deep: #0284c7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, #e0f2fe 0%, transparent 55%),
+        linear-gradient(180deg, #0b1220 0%, #111827 40%, #0f172a 100%);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+    }
+    .phone {
+      width: min(390px, 100%);
+      height: 780px;
+      border-radius: 28px;
+      background: linear-gradient(165deg, #f1f5f9, #e2e8f0);
+      box-shadow:
+        0 0 0 10px #1e293b,
+        0 30px 80px rgba(0,0,0,.45);
+      position: relative;
+      overflow: hidden;
+    }
+    .phone-bar {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(8px);
+    }
+    .fake-app {
+      padding: 16px;
+      opacity: .35;
+      filter: blur(1px);
+    }
+    .fake-card {
+      height: 72px;
+      border-radius: 16px;
+      background: #fff;
+      margin-bottom: 10px;
+    }
+    .scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, .48);
+      animation: fadeIn .35s ease;
+    }
+    .modal {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--card);
+      border-radius: 22px;
+      padding: 28px 22px 22px;
+      box-shadow: 0 24px 60px rgba(2, 8, 23, .35);
+      animation: riseIn .55s cubic-bezier(.22,1,.36,1);
+      overflow: hidden;
+    }
+    .modal::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold), var(--sky), var(--gold));
+    }
+    .badge {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 14px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--gold-soft), #fff8e7);
+      box-shadow: 0 10px 24px rgba(201,162,39,.28);
+      animation: pop .7s cubic-bezier(.22,1,.36,1) .1s both;
+    }
+    .badge svg { width: 34px; height: 34px; }
+    .eyebrow {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 8px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -.02em;
+    }
+    p {
+      margin: 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .pill {
+      margin: 16px auto 0;
+      width: fit-content;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--sky) 12%, white);
+      color: var(--sky-deep);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .tg {
+      margin-top: 14px;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      text-decoration: none;
+      border: 1px solid color-mix(in srgb, var(--sky) 35%, #e2e8f0);
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--sky-deep);
+      background: color-mix(in srgb, var(--sky) 8%, white);
+    }
+    .cta {
+      margin-top: 10px;
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(180deg, #38bdf8, var(--sky-deep));
+      box-shadow: 0 10px 22px rgba(14,165,233,.28);
+      cursor: pointer;
+    }
+    .cta:active { transform: scale(.98); }
+    .note {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+      max-width: 90vw;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(-42%) scale(.94); }
+      to { opacity: 1; transform: translateY(-50%) scale(1); }
+    }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(.6); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scrim, .modal, .badge { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone" aria-label="Превью экрана приложения">
+    <div class="phone-bar">Моя запись</div>
+    <div class="fake-app">
+      <div class="fake-card"></div>
+      <div class="fake-card"></div>
+      <div class="fake-card"></div>
+      <div class="fake-card"></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="modal" role="dialog" aria-labelledby="gift-title">
+      <div class="badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7L12 16.8 5.7 20.6 8 13.6 2 9.2h7.6L12 2z" fill="#C9A227"/>
+        </svg>
+      </div>
+      <p class="eyebrow">Спасибо за тест</p>
+      <h1 id="gift-title">Вечный Pro — вам</h1>
+      <p>
+        Спасибо за помощь в тестировании.
+        Дарим вечный премиум-доступ ко всем возможностям Pro.<br /><br />
+        Правки и идеи пишите мне в Telegram.
+      </p>
+      <div class="pill">Pro · без срока</div>
+      <a class="tg" href="https://t.me/timb2b_b2c" target="_blank" rel="noopener">Написать @timb2b_b2c</a>
+      <button type="button" class="cta">Отлично, спасибо</button>
+    </div>
+  </div>
+  <p class="note">Превью · первые 15 заведений + именные тестеры · кнопка @timb2b_b2c</p>
+</body>
+</html>

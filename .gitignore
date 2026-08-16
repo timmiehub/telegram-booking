@@ -1,0 +1,16 @@
+node_modules/
+webapp/node_modules/
+dist/
+webapp/dist/
+.env
+.env.*
+!.env.example
+!.env*.example
+bot/.bot.pid
+bot/.chat-roles.json
+bot/.vps.local
+*.log
+.DS_Store
+.vite/
+.vercel/
+.railway/

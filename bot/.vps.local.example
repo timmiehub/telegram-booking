@@ -1,0 +1,6 @@
+# Скопируй в bot/.vps.local (файл не попадёт в git)
+# Timeweb → сервер Ambitious Stork → IP и пароль root
+
+VPS_HOST=185.XXX.XXX.XXX
+VPS_USER=root
+VPS_PASS=твой_пароль_root

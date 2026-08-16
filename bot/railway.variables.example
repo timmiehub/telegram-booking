@@ -1,0 +1,5 @@
+# Скопируй в Railway Variables для сервиса bot
+BOT_TOKEN=
+WEBAPP_URL=https://YOUR_APP.vercel.app/?business=demo
+SUPABASE_URL=
+SUPABASE_ANON_KEY=

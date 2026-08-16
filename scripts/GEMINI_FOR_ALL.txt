@@ -1,0 +1,17 @@
+# Один Gemini на всех мастеров (серверный ключ)
+
+1) Открой https://supabase.com/dashboard/project/jwmequerozztzpzisusa/settings/functions
+   или: Project Settings → Edge Functions → Secrets
+2) Добавь secret:
+   Name: GEMINI_API_KEY
+   Value: (ваш ключ из AI Studio)
+
+3) Edge Functions → Deploy a new function
+   Name: ai
+   Вставь код из supabase/functions/ai/index.ts
+
+Или в терминале (после `npx supabase login`):
+  npx supabase secrets set GEMINI_API_KEY=ВАШ_КЛЮЧ --project-ref jwmequerozztzpzisusa
+  npx supabase functions deploy ai --project-ref jwmequerozztzpzisusa
+
+Проверка: в кабинете любого мастера «Окна» → «Красивый текст».

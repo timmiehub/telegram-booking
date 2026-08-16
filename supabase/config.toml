@@ -1,0 +1,8 @@
+# Supabase local / CLI config
+project_id = "jwmequerozztzpzisusa"
+
+[functions.tribute-webhook]
+verify_jwt = false
+
+[functions.ai]
+verify_jwt = false

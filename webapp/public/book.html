@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Запись</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0d10;
+        --text: #f3f4f6;
+        --muted: #9aa3b2;
+        --primary: #2aabee;
+        --btn-text: #0b0d10;
+        --surface: #14181f;
+        --radius: 12px;
+        --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+        text-align: center;
+        gap: 16px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.45;
+        max-width: 28rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 22px;
+        border-radius: var(--radius);
+        background: var(--primary);
+        color: var(--btn-text);
+        font-size: 16px;
+        font-weight: 650;
+        text-decoration: none;
+        width: min(100%, 320px);
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid rgba(243, 244, 246, 0.1);
+        border-radius: var(--radius);
+        padding: 16px;
+        width: min(100%, 320px);
+      }
+      .card img {
+        width: 180px;
+        height: 180px;
+        display: block;
+        margin: 0 auto 10px;
+        border-radius: 8px;
+        background: #fff;
+      }
+      .hint { font-size: 13px; }
+      .err { color: #fbbf24; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1 id="title">Запись</h1>
+      <p id="subtitle">Откроется приложение в Telegram — выберите услугу и время.</p>
+      <a class="btn" id="cta" href="#">Открыть запись в Telegram</a>
+      <div class="card" id="qrCard" hidden>
+        <img id="qr" alt="QR-код записи" width="180" height="180" />
+        <p class="hint">Или наведите камеру на QR</p>
+      </div>
+      <p class="hint err" id="error" hidden></p>
+    </main>
+    <script>
+      (function () {
+        var BOT = 'booking_inapp_bot'
+        var APP = 'book'
+        var params = new URLSearchParams(window.location.search)
+        var slug = (params.get('b') || params.get('business') || params.get('slug') || '').trim()
+        var titleEl = document.getElementById('title')
+        var subEl = document.getElementById('subtitle')
+        var cta = document.getElementById('cta')
+        var err = document.getElementById('error')
+        var qrCard = document.getElementById('qrCard')
+        var qr = document.getElementById('qr')
+
+        if (!slug) {
+          titleEl.textContent = 'Нужна ссылка мастера'
+          subEl.textContent = 'Откройте страницу вида book.html?b=имя-заведения'
+          cta.hidden = true
+          err.hidden = false
+          err.textContent = 'Параметр b не указан'
+          return
+        }
+
+        var deep = 'https://t.me/' + BOT + '/' + APP + '?startapp=' + encodeURIComponent(slug)
+        titleEl.textContent = 'Запись · ' + slug
+        cta.href = deep
+        cta.textContent = 'Открыть запись в Telegram'
+        qr.src =
+          'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' +
+          encodeURIComponent(deep)
+        qrCard.hidden = false
+
+        // Авто-редирект в Telegram, если пользователь пришёл с телефона
+        var ua = navigator.userAgent || ''
+        var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua)
+        if (isMobile && params.get('noredirect') !== '1') {
+          window.location.replace(deep)
+        }
+      })()
+    </script>
+  </body>
+</html>
