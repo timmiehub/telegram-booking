@@ -74,13 +74,8 @@ console.log('🚀 Деплою на gh-pages...')
 run('git fetch origin gh-pages')
 run('git checkout gh-pages')
 
-// Remove everything except .git and the source folders we need later
-const keep = new Set(['.git', '.nojekyll'])
-for (const item of fs.readdirSync(root, { withFileTypes: true })) {
-  if (keep.has(item.name)) continue
-  const full = path.join(root, item.name)
-  fs.rmSync(full, { recursive: true, force: true })
-}
+// Remove tracked gh-pages files (keep untracked source folders like webapp/bot)
+run('git rm -r .')
 
 // 7. Copy fresh build
 for (const item of fs.readdirSync(dist, { withFileTypes: true })) {
@@ -91,6 +86,17 @@ for (const item of fs.readdirSync(dist, { withFileTypes: true })) {
 
 // 8. Ensure .nojekyll
 fs.writeFileSync(path.join(root, '.nojekyll'), '', 'utf8')
+
+// 9. Write gh-pages .gitignore to avoid staging master source folders
+const gitignoreLines = ['**', '!.nojekyll', '!.gitignore']
+for (const item of fs.readdirSync(dist)) {
+  const itemPath = path.join(dist, item)
+  gitignoreLines.push(`!${item}`)
+  if (fs.statSync(itemPath).isDirectory()) {
+    gitignoreLines.push(`!${item}/**`)
+  }
+}
+fs.writeFileSync(path.join(root, '.gitignore'), gitignoreLines.join('\n') + '\n', 'utf8')
 
 // 9. Commit and push
 run('git add -A')
