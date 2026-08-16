@@ -3583,6 +3583,16 @@ input.field:-webkit-autofill:focus {
 }
 
 /* Settings hub (кабинет мастера) */
+.settings-group-title {
+  padding: 0 4px;
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brand-text) 55%, transparent);
+}
+
 .settings-hub-card {
   display: flex;
   align-items: center;
@@ -3616,6 +3626,32 @@ input.field:-webkit-autofill:focus {
 .settings-hub-card--pro {
   border-color: color-mix(in srgb, var(--brand-primary) 28%, transparent);
   background: color-mix(in srgb, var(--brand-primary) 6%, var(--brand-surface));
+}
+
+/* Компактная строка «Сторонняя запись» в расписании */
+.schedule-external-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px dashed color-mix(in srgb, var(--brand-text) 14%, transparent);
+  background: color-mix(in srgb, var(--brand-surface) 92%, transparent);
+  color: var(--brand-text);
+  text-align: left;
+}
+
+.schedule-external-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+  color: var(--brand-primary);
+  flex-shrink: 0;
 }
 
 .support-tg-btn {

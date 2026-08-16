@@ -24,12 +24,6 @@ import {
   DEFAULT_BUSINESS_SETTINGS,
   normalizeMediaFrame,
 } from '../lib/settings'
-import {
-  fillNextDays,
-  createEmptySchedule,
-  fetchMemberAvailability,
-  updateMemberSchedule,
-} from '../lib/availability'
 import { assetUrl } from '../lib/assets'
 import { haptic } from '../hooks/useTelegramChrome'
 import BrandColorCard from '../components/master/BrandColorCard'
@@ -39,14 +33,12 @@ import { canUseBrand, isProPlan, portfolioMax, canAddPortfolioItem, getProPriceL
 import ProPanel from './ProPanel'
 import SettingsHub from '../components/master/SettingsHub'
 import InviteColleagueCard from '../components/master/InviteColleagueCard'
-import ScheduleSection from './master/ScheduleSection'
 import MediaCropSheet from '../components/MediaCropSheet'
 
 const SECTION_TITLE = {
   profile: 'Профиль',
   media: 'Профиль',
   services: 'Услуги',
-  schedule: 'Расписание',
   pro: 'Pro',
   invite: 'Пригласить коллегу',
 }
@@ -88,7 +80,6 @@ export default function MasterProfile({
   const [addressLocal, setAddressLocal] = useState(businessAddress || '')
   const [typeLocal, setTypeLocal] = useState(businessType)
   const [tagsLocal, setTagsLocal] = useState(businessSearchTags || [])
-  const [schedule, setSchedule] = useState(() => fillNextDays(createEmptySchedule(), 14))
   const [bizSettings, setBizSettings] = useState(DEFAULT_BUSINESS_SETTINGS)
   const [portfolio, setPortfolio] = useState([])
   const [portfolioBusy, setPortfolioBusy] = useState(false)
@@ -196,19 +187,6 @@ export default function MasterProfile({
       cancelled = true
     }
   }, [businessId])
-
-  useEffect(() => {
-    let cancelled = false
-    async function loadHours() {
-      if (!masterId) return
-      const { schedule: loaded } = await fetchMemberAvailability(masterId)
-      if (!cancelled) setSchedule(loaded)
-    }
-    loadHours()
-    return () => {
-      cancelled = true
-    }
-  }, [masterId])
 
   async function onPickFile(kind, file) {
     if (!file || !businessId) return
@@ -366,34 +344,6 @@ export default function MasterProfile({
     onBusinessMediaChange?.()
   }
 
-  async function onSaveBizSettings(patch) {
-    if (!businessId) return
-    setBusy('settings')
-    const res = await updateBusinessSettings(businessId, patch)
-    setBusy('')
-    if (!res.ok) {
-      setError(res.error || 'Не сохранилось')
-      return
-    }
-    setBizSettings(res.settings)
-    haptic('success')
-    showToast('Настройки сохранены')
-  }
-
-  async function onSaveSchedule() {
-    if (!masterId) return
-    setBusy('schedule')
-    setError('')
-    const res = await updateMemberSchedule(masterId, schedule)
-    setBusy('')
-    if (!res.ok) {
-      setError(res.error || 'Расписание не сохранилось')
-      return
-    }
-    haptic('success')
-    showToast('Расписание сохранено')
-  }
-
   async function onPickType(id) {
     if (!businessId || id === typeLocal) return
     setBusy('type')
@@ -485,6 +435,7 @@ export default function MasterProfile({
 
       {section === 'profile' || section === 'media' ? (
         <div className="space-y-4">
+          <p className="settings-group-title">Фото</p>
           <div className="grid grid-cols-2 gap-2">
             <label className="pressable booking-secondary-btn cursor-pointer text-center">
               {busy === 'avatar' ? 'Загружаю…' : 'Сменить аву'}
@@ -555,6 +506,8 @@ export default function MasterProfile({
               setSection('pro')
             }}
           />
+
+          <p className="settings-group-title">О заведении</p>
 
           <div className="space-y-2">
             <TextField
@@ -632,6 +585,8 @@ export default function MasterProfile({
             busy={busy === 'tags'}
             onSave={onSaveSearchTags}
           />
+
+          <p className="settings-group-title">Портфолио</p>
 
           <div>
             <span className="meta-label">Портфолио на записи</span>
@@ -765,18 +720,6 @@ export default function MasterProfile({
             onServicesChange={onServicesChange}
           />
         </div>
-      ) : null}
-
-      {section === 'schedule' ? (
-        <ScheduleSection
-          schedule={schedule}
-          setSchedule={setSchedule}
-          bizSettings={bizSettings}
-          setBizSettings={setBizSettings}
-          busy={busy}
-          onSaveSchedule={onSaveSchedule}
-          onSaveBizSettings={onSaveBizSettings}
-        />
       ) : null}
 
       {section === 'pro' ? (

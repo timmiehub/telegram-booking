@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import Toast from '../components/Toast'
 import ExternalBookingSheet from '../components/ExternalBookingSheet'
 import { useToast } from '../hooks/useToast'
@@ -79,30 +80,27 @@ export default function MasterScheduleTab({ masterId, businessId }) {
       <p className="text-sm text-[var(--brand-muted)]">
         Отметьте рабочие дни и часы — клиенты увидят только свободные окна.
       </p>
-      <div className="card px-4 py-3 text-sm text-[var(--brand-muted)] space-y-3">
-        <div>
-          <p className="font-semibold text-[var(--brand-text)]">Записи из других сервисов</p>
-          <p className="mt-1">
-            YClients, Google Calendar, звонки — чтобы слот был занят и клиенты не записывались
-            поверх.
-          </p>
-          <p className="mt-2">
-            Здесь — одна запись. В боте: Меню → «Я исполнитель» → «➕ Сторонняя» или{' '}
-            <span className="text-[var(--brand-text)]">/external</span>. Несколько дат на месяцы —
-            в боте строкой «каждый вт и чт … до …».
-          </p>
-        </div>
-        <button
-          type="button"
-          className="btn btn-secondary w-full"
-          onClick={() => {
-            haptic('light')
-            setExternalOpen(true)
-          }}
-        >
-          Добавить запись
-        </button>
-      </div>
+      <button
+        type="button"
+        className="pressable schedule-external-row"
+        onClick={() => {
+          haptic('light')
+          setExternalOpen(true)
+        }}
+      >
+        <span className="schedule-external-row-icon" aria-hidden>
+          <Icon name="icon-plus" size={18} />
+        </span>
+        <span className="min-w-0 flex-1 text-left">
+          <span className="block text-sm font-semibold text-[var(--brand-text)]">
+            Сторонняя запись
+          </span>
+          <span className="mt-0.5 block text-xs text-[var(--brand-muted)]">
+            YClients, Google, звонок — занять слот, чтобы не записывались поверх
+          </span>
+        </span>
+        <Icon name="icon-chevron-right" size={18} className="shrink-0 opacity-50" />
+      </button>
       {error ? <p className="text-sm text-warning">{error}</p> : null}
       <ScheduleSection
         schedule={schedule}

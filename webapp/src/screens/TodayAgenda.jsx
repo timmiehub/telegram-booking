@@ -184,6 +184,19 @@ export default function TodayAgenda({
           <Icon name="icon-calendar" size={20} />
         </button>
 
+        <button
+          type="button"
+          className="pressable day-chip day-chip--calendar"
+          aria-label="Добавить стороннюю запись (YClients и другие)"
+          title="Добавить стороннюю запись"
+          onClick={() => {
+            haptic('light')
+            setExternalOpen(true)
+          }}
+        >
+          <Icon name="icon-plus" size={20} />
+        </button>
+
         {!inHorizon ? (
           <button
             type="button"
@@ -215,19 +228,6 @@ export default function TodayAgenda({
             </button>
           )
         })}
-
-        <button
-          type="button"
-          className="pressable day-chip day-chip--calendar"
-          aria-label="Добавить стороннюю запись (YClients и другие)"
-          title="Добавить стороннюю запись"
-          onClick={() => {
-            haptic('light')
-            setExternalOpen(true)
-          }}
-        >
-          <Icon name="icon-plus" size={20} />
-        </button>
       </div>
 
       <p className="text-sm text-[var(--brand-muted)]">
