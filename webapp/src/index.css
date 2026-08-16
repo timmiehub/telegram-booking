@@ -227,6 +227,15 @@ html.has-main-button .app-shell,
   overflow: hidden;
   border-radius: calc(var(--brand-radius) + 2px) calc(var(--brand-radius) + 2px) 0 0;
   background: var(--brand-surface-2);
+  position: relative;
+}
+
+.profile-header-cover-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));
 }
 
 .profile-header-cover {
