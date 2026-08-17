@@ -19,6 +19,14 @@ export function bookingModifyPolicy(booking) {
   }
 }
 
+function isProfileId(v) {
+  return typeof v === 'string' && v.length === 36 && v.includes('-')
+}
+
+function clientColumn(v) {
+  return isProfileId(v) ? 'client_id' : 'client_telegram_id'
+}
+
 export async function assertClientCanModifyBooking(
   bookingId,
   clientTelegramId = null,
@@ -26,13 +34,14 @@ export async function assertClientCanModifyBooking(
   if (!bookingId || !supabase) {
     return { ok: false, error: 'Нет id' }
   }
+  const column = clientTelegramId ? clientColumn(clientTelegramId) : null
   let query = supabase
     .from('bookings')
     .select(
-      'id, starts_at, status, master_id, business_id, client_telegram_id, services(title), businesses(settings, name)',
+      'id, starts_at, status, master_id, business_id, client_id, client_telegram_id, services(title), businesses(settings, name)',
     )
     .eq('id', bookingId)
-  if (clientTelegramId) query = query.eq('client_telegram_id', clientTelegramId)
+  if (column) query = query.eq(column, clientTelegramId)
   const { data: row, error } = await query.maybeSingle()
   if (error) return { ok: false, error: error.message }
   if (!row) return { ok: false, error: 'Запись не найдена' }

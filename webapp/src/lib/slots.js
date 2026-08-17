@@ -234,6 +234,7 @@ export async function createBooking({
   endsAt,
   priceCents,
   currency = 'RUB',
+  clientProfileId = null,
   clientTelegramId = null,
   locationId = null,
 }) {
@@ -263,6 +264,7 @@ export async function createBooking({
     currency,
     client_telegram_id: clientTelegramId,
   }
+  if (clientProfileId) row.client_id = clientProfileId
   if (businessId) row.business_id = businessId
   if (locationId) row.location_id = locationId
 
@@ -294,14 +296,16 @@ export async function rescheduleBooking({
   startsAt,
   endsAt,
   clientTelegramId = null,
+  clientProfileId = null,
   masterId = null,
 }) {
   if (!bookingId || !supabase) {
     return { ok: false, error: 'Нет id' }
   }
 
-  if (clientTelegramId) {
-    const gate = await assertClientCanModifyBooking(bookingId, clientTelegramId)
+  const clientId = clientProfileId || clientTelegramId
+  if (clientId) {
+    const gate = await assertClientCanModifyBooking(bookingId, clientId)
     if (!gate.ok) return gate
     if (!masterId) masterId = gate.booking?.master_id || null
   }

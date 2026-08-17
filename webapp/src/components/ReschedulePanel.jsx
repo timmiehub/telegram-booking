@@ -83,6 +83,7 @@ export default function ReschedulePanel({
       startsAt: selectedSlot.start,
       endsAt: selectedSlot.end,
       clientTelegramId: booking.client_telegram_id,
+      clientProfileId: booking.client_id,
     })
     setBusy(false)
     if (!res.ok) {

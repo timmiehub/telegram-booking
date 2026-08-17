@@ -1,41 +1,75 @@
 import { supabase } from './supabase'
 
-/** Найти или создать профиль по Telegram ID */
-export async function ensureProfile({ telegramId, fullName, username }) {
-  if (!supabase || !telegramId) {
-    return { profile: null, error: 'Нет Telegram ID или Supabase' }
+/** Найти или создать профиль по Telegram ID и/или VK ID */
+export async function ensureProfile({ telegramId, vkId, fullName, username }) {
+  if (!supabase) {
+    return { profile: null, error: 'Нет Supabase' }
+  }
+  if (!telegramId && !vkId) {
+    return { profile: null, error: 'Нет Telegram ID или VK ID' }
   }
 
-  const { data: existing, error: selectError } = await supabase
-    .from('profiles')
-    .select('id, telegram_id, full_name, username, role, slug, business_name')
-    .eq('telegram_id', telegramId)
-    .maybeSingle()
+  // Поиск по Telegram
+  if (telegramId) {
+    const { data: existingTg, error: selectError } = await supabase
+      .from('profiles')
+      .select('id, telegram_id, vk_id, full_name, username, role, slug, business_name')
+      .eq('telegram_id', telegramId)
+      .maybeSingle()
 
-  if (selectError) {
-    console.warn('ensureProfile select:', selectError.message)
-  }
-
-  if (existing) {
-    const patch = {}
-    if (fullName && existing.full_name !== fullName) patch.full_name = fullName
-    if (username && existing.username !== username) patch.username = username
-    if (Object.keys(patch).length) {
-      await supabase.from('profiles').update(patch).eq('id', existing.id)
-      return { profile: { ...existing, ...patch }, error: null }
+    if (selectError) {
+      console.warn('ensureProfile select (tg):', selectError.message)
     }
-    return { profile: existing, error: null }
+
+    if (existingTg) {
+      const patch = {}
+      if (fullName && existingTg.full_name !== fullName) patch.full_name = fullName
+      if (username && existingTg.username !== username) patch.username = username
+      if (Object.keys(patch).length) {
+        await supabase.from('profiles').update(patch).eq('id', existingTg.id)
+        return { profile: { ...existingTg, ...patch }, error: null }
+      }
+      return { profile: existingTg, error: null }
+    }
   }
+
+  // Поиск по VK
+  if (vkId) {
+    const { data: existingVk, error: selectError } = await supabase
+      .from('profiles')
+      .select('id, telegram_id, vk_id, full_name, username, role, slug, business_name')
+      .eq('vk_id', vkId)
+      .maybeSingle()
+
+    if (selectError) {
+      console.warn('ensureProfile select (vk):', selectError.message)
+    }
+
+    if (existingVk) {
+      const patch = {}
+      if (fullName && existingVk.full_name !== fullName) patch.full_name = fullName
+      if (username && existingVk.username !== username) patch.username = username
+      if (Object.keys(patch).length) {
+        await supabase.from('profiles').update(patch).eq('id', existingVk.id)
+        return { profile: { ...existingVk, ...patch }, error: null }
+      }
+      return { profile: existingVk, error: null }
+    }
+  }
+
+  // Создание нового
+  const insert = {
+    full_name: fullName || null,
+    username: username || null,
+    role: 'client',
+  }
+  if (telegramId) insert.telegram_id = telegramId
+  if (vkId) insert.vk_id = vkId
 
   const { data: created, error } = await supabase
     .from('profiles')
-    .insert({
-      telegram_id: telegramId,
-      full_name: fullName || null,
-      username: username || null,
-      role: 'client',
-    })
-    .select('id, telegram_id, full_name, username, role, slug, business_name')
+    .insert(insert)
+    .select('id, telegram_id, vk_id, full_name, username, role, slug, business_name')
     .single()
 
   if (error) {

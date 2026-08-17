@@ -111,11 +111,13 @@ function UpcomingCard({ booking, pendingId, chatBusy, onReschedule, onCancelTap,
 
 export default function ClientHome({
   userName,
+  profile,
   deeplinkBusiness = null,
   onBookBusiness,
   onSwitchRole,
 }) {
-  const tgId = WebApp.initDataUnsafe?.user?.id ?? null
+  const clientProfileId = profile?.id ?? null
+  const tgId = profile?.telegram_id ?? null
   const [upcoming, setUpcoming] = useState([])
   const [past, setPast] = useState([])
   const [pastExpanded, setPastExpanded] = useState(false)
@@ -142,10 +144,10 @@ export default function ClientHome({
   async function load() {
     setLoading(true)
     const [u, p, m, last] = await Promise.all([
-      fetchClientUpcomingAll(tgId),
-      fetchClientPastBookings(tgId, 15),
-      fetchClientMasters(tgId),
-      fetchLastRepeatableBooking(tgId),
+      fetchClientUpcomingAll(clientProfileId),
+      fetchClientPastBookings(clientProfileId, 15),
+      fetchClientMasters(clientProfileId),
+      fetchLastRepeatableBooking(clientProfileId),
     ])
     setUpcoming(u)
     setPast(p)
@@ -156,7 +158,7 @@ export default function ClientHome({
 
   async function onHidePast(id) {
     setPendingId(id)
-    const result = await hideClientBooking(id, tgId)
+    const result = await hideClientBooking(id, clientProfileId)
     setPendingId(null)
     if (!result.ok) {
       setError(result.error || 'Не удалось скрыть')
@@ -234,7 +236,7 @@ export default function ClientHome({
     setCancelError('')
     setError('')
     setPendingId(id)
-    const result = await cancelClientBooking(id, tgId)
+    const result = await cancelClientBooking(id, clientProfileId)
     setPendingId(null)
     if (!result.ok) {
       setCancelError(result.error || 'Не удалось отменить')
@@ -337,9 +339,9 @@ export default function ClientHome({
 
       <section className="list-section mb-6 space-y-3">
         <h2 className="list-section-title">Активные записи</h2>
-        {!tgId ? (
+        {!clientProfileId ? (
           <p className="text-sm text-[var(--brand-muted)]">
-            Откройте приложение из Telegram.
+            Профиль не найден. Откройте из Telegram или VK.
           </p>
         ) : upcoming.length === 0 ? (
           <EmptyState
@@ -374,7 +376,7 @@ export default function ClientHome({
         {rescheduleBooking ? (
           <div className="mt-3">
             <ReschedulePanel
-              booking={{ ...rescheduleBooking, client_telegram_id: tgId }}
+              booking={{ ...rescheduleBooking, client_telegram_id: tgId, client_id: clientProfileId }}
               businessId={rescheduleBooking.business_id}
               onDone={() => {
                 setRescheduleBooking(null)

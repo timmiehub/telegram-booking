@@ -10,6 +10,7 @@ import { fetchMasterAnalytics } from './lib/analytics'
 import { getSavedRole, setSavedRole } from './lib/role'
 import { WebApp, isTelegramEnvironment } from './lib/telegram'
 import { isVkEnvironment } from './lib/vk'
+import { resolveCurrentProfile, getTelegramIdentity, getVkIdentity } from './lib/identity'
 import { hideBootSplash } from './lib/bootSplash'
 import AppShell, { SkeletonBlock } from './components/AppShell'
 import RoleGate from './screens/RoleGate'
@@ -75,9 +76,6 @@ function resolveInitialBookingStep(members) {
 
 /** Явные view из бота; deeplink → сразу запись */
 function resolveBootRoute({ canOpenCabinet, savedRole, hasDeeplink, inviteCode }) {
-  if (isVkEnvironment()) {
-    return { mode: 'vk-link' }
-  }
   const view = new URLSearchParams(window.location.search).get('view')
   if (view === 'join' || inviteCode) {
     return {
@@ -329,12 +327,6 @@ function App() {
       }
 
       try {
-        if (isVkEnvironment()) {
-          setUserName('VK')
-          setMode('vk-link')
-          finishReady({ outside: false })
-          return
-        }
         initTelegramSdkSafely()
         const inTelegram = isTelegramEnvironment()
         captureGrowthAttributionFromContext()
@@ -358,7 +350,7 @@ function App() {
           }
         }
 
-        if (!inTelegram && !slug && !view && !teamInvite && !allowDevPreview) {
+        if (!inTelegram && !isVkEnvironment() && !slug && !view && !teamInvite && !allowDevPreview) {
           finishReady({ outside: true })
           return
         }
@@ -387,31 +379,42 @@ function App() {
               )
               nextProfile = ensured.profile
               if (ensured.error) logger.warn('profile:', ensured.error)
-              if (nextProfile) {
-                const knownSlug = slug || null
-                if (knownSlug) {
-                  const [mems, bizLoaded] = await Promise.all([
-                    withTimeout(fetchMemberships(nextProfile.id), BOOT_MS),
-                    withTimeout(loadBusiness(knownSlug), BOOT_MS).catch((err) => {
-                      logger.warn('loadBusiness boot parallel:', err?.message || err)
-                      return null
-                    }),
-                  ])
-                  nextMemberships = mems
-                  if (bizLoaded) earlyLoaded = bizLoaded
-                } else {
-                  nextMemberships = await withTimeout(
-                    fetchMemberships(nextProfile.id),
-                    BOOT_MS,
-                  )
-                }
-              }
             } catch (err) {
               logger.warn('profile/memberships boot:', err?.message || err)
             }
           }
+        } else if (isVkEnvironment()) {
+          try {
+            const ensured = await withTimeout(resolveCurrentProfile(), BOOT_MS)
+            nextProfile = ensured
+            if (!cancelled && nextProfile) {
+              setUserName(nextProfile.full_name || `VK ${nextProfile.vk_id}`)
+            }
+          } catch (err) {
+            logger.warn('vk profile/memberships boot:', err?.message || err)
+          }
         } else if (!cancelled) {
           setUserName(allowDevPreview ? 'Гость (dev)' : 'Гость')
+        }
+
+        if (nextProfile && !cancelled) {
+          const knownSlug = slug || null
+          if (knownSlug) {
+            const [mems, bizLoaded] = await Promise.all([
+              withTimeout(fetchMemberships(nextProfile.id), BOOT_MS),
+              withTimeout(loadBusiness(knownSlug), BOOT_MS).catch((err) => {
+                logger.warn('loadBusiness boot parallel:', err?.message || err)
+                return null
+              }),
+            ])
+            nextMemberships = mems
+            if (bizLoaded) earlyLoaded = bizLoaded
+          } else {
+            nextMemberships = await withTimeout(
+              fetchMemberships(nextProfile.id),
+              BOOT_MS,
+            )
+          }
         }
 
         if (cancelled) return
@@ -849,6 +852,7 @@ function App() {
       <Suspense fallback={<CabinetFallback />}>
         <ClientHome
           userName={userName}
+          profile={profile}
           deeplinkBusiness={deeplinkBusiness}
           onBookBusiness={openBookingForSlug}
           onSwitchRole={switchRole}
@@ -879,6 +883,7 @@ function App() {
             setSelectedServiceId(active[0]?.id || null)
           }}
           userName={userName}
+          profile={profile}
           services={services.filter((s) => s.is_active !== false)}
           selectedServiceId={selectedServiceId}
           setSelectedServiceId={setSelectedServiceId}

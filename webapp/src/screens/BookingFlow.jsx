@@ -55,6 +55,7 @@ export default function BookingFlow({
   selectedMasterId,
   setSelectedMasterId,
   userName,
+  profile,
   services,
   selectedServiceId,
   setSelectedServiceId,
@@ -251,7 +252,8 @@ export default function BookingFlow({
       endsAt: selectedSlot.end,
       priceCents: selectedService.price_cents,
       currency: selectedService.currency,
-      clientTelegramId: WebApp.initDataUnsafe?.user?.id ?? null,
+      clientProfileId: profile?.id ?? null,
+      clientTelegramId: profile?.telegram_id ?? null,
       locationId: loc?.id || null,
     })
     setBusy(false)

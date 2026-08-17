@@ -5,6 +5,14 @@ import { assertClientCanModifyBooking, bookingModifyPolicy } from './bookingModi
 
 export { bookingModifyPolicy } from './bookingModify'
 
+function isProfileId(v) {
+  return typeof v === 'string' && v.length === 36 && v.includes('-')
+}
+
+function clientColumn(v) {
+  return isProfileId(v) ? 'client_id' : 'client_telegram_id'
+}
+
 /** Записи мастера на календарный день */
 export async function fetchDayBookings(masterId, day = dayOffset(0)) {
   if (!masterId || !supabase) return []
@@ -163,7 +171,7 @@ export async function fetchClientBookings(masterId, clientTelegramId) {
     .from('bookings')
     .select(fieldsWithBuf)
     .eq('master_id', masterId)
-    .eq('client_telegram_id', clientTelegramId)
+    .eq(clientColumn(clientTelegramId), clientTelegramId)
     .gte('starts_at', now)
     .in('status', ['pending', 'confirmed'])
     .order('starts_at')
@@ -174,7 +182,7 @@ export async function fetchClientBookings(masterId, clientTelegramId) {
       .from('bookings')
       .select(fieldsCore)
       .eq('master_id', masterId)
-      .eq('client_telegram_id', clientTelegramId)
+      .eq(clientColumn(clientTelegramId), clientTelegramId)
       .gte('starts_at', now)
       .in('status', ['pending', 'confirmed'])
       .order('starts_at')
@@ -200,7 +208,7 @@ export async function fetchClientUpcomingAll(clientTelegramId) {
   let { data, error } = await supabase
     .from('bookings')
     .select(fieldsWithBuf)
-    .eq('client_telegram_id', clientTelegramId)
+    .eq(clientColumn(clientTelegramId), clientTelegramId)
     .gte('starts_at', now)
     .in('status', ['pending', 'confirmed'])
     .order('starts_at')
@@ -210,7 +218,7 @@ export async function fetchClientUpcomingAll(clientTelegramId) {
     ;({ data, error } = await supabase
       .from('bookings')
       .select(fieldsCore)
-      .eq('client_telegram_id', clientTelegramId)
+      .eq(clientColumn(clientTelegramId), clientTelegramId)
       .gte('starts_at', now)
       .in('status', ['pending', 'confirmed'])
       .order('starts_at')
@@ -233,7 +241,7 @@ export async function fetchClientMasters(clientTelegramId) {
     .select(
       'master_id, business_id, starts_at, businesses(id, slug, name, avatar_url, city, created_at)',
     )
-    .eq('client_telegram_id', clientTelegramId)
+    .eq(clientColumn(clientTelegramId), clientTelegramId)
     .not('master_id', 'is', null)
     .order('starts_at', { ascending: false })
     .limit(100)
@@ -276,7 +284,7 @@ export async function cancelClientBooking(id, clientTelegramId = null) {
 
   const run = async (body) => {
     let query = supabase.from('bookings').update(body).eq('id', id)
-    if (clientTelegramId) query = query.eq('client_telegram_id', clientTelegramId)
+    if (clientTelegramId) query = query.eq(clientColumn(clientTelegramId), clientTelegramId)
     return query.select('id, master_id, business_id, client_telegram_id').maybeSingle()
   }
 
@@ -311,7 +319,7 @@ export async function fetchClientPastBookings(clientTelegramId, limit = 10) {
     .select(
       'id, starts_at, status, master_id, business_id, service_id, hidden_by_client, services(id, title, duration_min, price_cents, currency), businesses(slug, name)',
     )
-    .eq('client_telegram_id', clientTelegramId)
+    .eq(clientColumn(clientTelegramId), clientTelegramId)
     .eq('hidden_by_client', false)
     .lt('starts_at', now.toISOString())
     .gte('starts_at', since.toISOString())
@@ -333,7 +341,7 @@ export async function hideClientBooking(id, clientTelegramId = null) {
     .from('bookings')
     .update({ hidden_by_client: true })
     .eq('id', id)
-  if (clientTelegramId) query = query.eq('client_telegram_id', clientTelegramId)
+  if (clientTelegramId) query = query.eq(clientColumn(clientTelegramId), clientTelegramId)
 
   const { data, error } = await query.select('id').maybeSingle()
   if (error) return { ok: false, error: error.message }
@@ -353,7 +361,7 @@ export async function fetchLastRepeatableBooking(clientTelegramId) {
     .select(
       'id, starts_at, status, master_id, business_id, service_id, services(id, title, duration_min, price_cents, currency, is_active), businesses(id, slug, name, avatar_url)',
     )
-    .eq('client_telegram_id', clientTelegramId)
+    .eq(clientColumn(clientTelegramId), clientTelegramId)
     .not('service_id', 'is', null)
     .not('status', 'like', 'cancelled%')
     .order('starts_at', { ascending: false })
