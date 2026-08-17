@@ -41,10 +41,10 @@ function verifyVkAuthKey(vkUserId: number, sign: string, secret: string) {
   return sign === md5(`${APP_ID}_${vkUserId}_${secret}`)
 }
 
-function assertSign(params: Record<string, string>, vkSecret: string) {
+async function assertSign(params: Record<string, string>, vkSecret: string) {
   const vkUserId = Number(params.vk_user_id)
   if (!Number.isFinite(vkUserId) || !params.sign) return { ok: false, error: 'bad_vk_params' }
-  const isMiniAppSign = verifyVkMiniAppSign(params, vkSecret)
+  const isMiniAppSign = await verifyVkMiniAppSign(params, vkSecret)
   const isAuthKey = verifyVkAuthKey(vkUserId, params.sign, vkSecret)
   if (!isMiniAppSign && !isAuthKey) return { ok: false, error: 'bad_sign' }
   return { ok: true, vkUserId }
@@ -104,10 +104,12 @@ Deno.serve(async (req) => {
 
   const action = String(body.action || '')
 
+  try {
+
   // action: link — Telegram -> VK (direct, mini app passes vk params + telegram_id)
   if (action === 'link') {
     const params = (body.params as Record<string, string>) || {}
-    const signRes = assertSign(params, vkSecret)
+    const signRes = await assertSign(params, vkSecret)
     if (!signRes.ok) {
       return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
@@ -141,7 +143,7 @@ Deno.serve(async (req) => {
   // action: resolve — find profile by vk_id
   if (action === 'resolve') {
     const params = (body.params as Record<string, string>) || {}
-    const signRes = assertSign(params, vkSecret)
+    const signRes = await assertSign(params, vkSecret)
     if (!signRes.ok) {
       return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
@@ -155,7 +157,7 @@ Deno.serve(async (req) => {
   // action: create_link_code — VK -> Telegram flow
   if (action === 'create_link_code') {
     const params = (body.params as Record<string, string>) || {}
-    const signRes = assertSign(params, vkSecret)
+    const signRes = await assertSign(params, vkSecret)
     if (!signRes.ok) {
       return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
@@ -230,7 +232,7 @@ Deno.serve(async (req) => {
   // action: resolve_or_create — VK-only вход (без Telegram)
   if (action === 'resolve_or_create') {
     const params = (body.params as Record<string, string>) || {}
-    const signRes = assertSign(params, vkSecret)
+    const signRes = await assertSign(params, vkSecret)
     if (!signRes.ok) {
       return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
@@ -275,4 +277,11 @@ Deno.serve(async (req) => {
     status: 422,
     headers: { ...cors, 'Content-Type': 'application/json' },
   })
+
+  } catch (err) {
+    return new Response(
+      JSON.stringify({ ok: false, error: String((err as Error)?.message || err) }),
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } },
+    )
+  }
 })

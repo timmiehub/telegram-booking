@@ -329,6 +329,12 @@ function App() {
       }
 
       try {
+        if (isVkEnvironment()) {
+          setUserName('VK')
+          setMode('vk-link')
+          finishReady({ outside: false })
+          return
+        }
         initTelegramSdkSafely()
         const inTelegram = isTelegramEnvironment()
         captureGrowthAttributionFromContext()
