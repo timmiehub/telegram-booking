@@ -25,7 +25,7 @@ create type public.button_style as enum ('solid', 'outline', 'soft', 'pill');
 -- ---------------------------------------------------------------------------
 create table public.profiles (
   id uuid primary key default gen_random_uuid(),
-  telegram_id bigint unique not null,
+  telegram_id bigint unique,
   -- Привязка VK-аккаунта к тому же профилю (клиент подключает VK из Telegram Mini App)
   vk_id bigint unique,
   username text,

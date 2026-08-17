@@ -227,6 +227,50 @@ Deno.serve(async (req) => {
     })
   }
 
+  // action: resolve_or_create — VK-only вход (без Telegram)
+  if (action === 'resolve_or_create') {
+    const params = (body.params as Record<string, string>) || {}
+    const signRes = assertSign(params, vkSecret)
+    if (!signRes.ok) {
+      return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+    const vkUserId = signRes.vkUserId
+
+    const existing = await rest(`/profiles?select=id,telegram_id,full_name,role&vk_id=eq.${vkUserId}&limit=1`)
+    if (existing?.length) {
+      return new Response(JSON.stringify({ ok: true, profile: existing[0], created: false }), {
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const firstName = params.vk_first_name || ''
+    const lastName = params.vk_last_name || ''
+    const fullName = `${firstName} ${lastName}`.trim() || null
+    const username = params.vk_username || null
+
+    const inserted = await rest('/profiles', {
+      method: 'POST',
+      headers: supabaseHeaders,
+      body: JSON.stringify({
+        vk_id: vkUserId,
+        full_name: fullName,
+        username,
+        role: 'client',
+      }),
+    })
+
+    if (!inserted?.length) {
+      return new Response(JSON.stringify({ ok: false, error: 'create_profile_failed' }), {
+        status: 500,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      })
+    }
+
+    return new Response(JSON.stringify({ ok: true, profile: inserted[0], created: true }), {
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    })
+  }
+
   return new Response(JSON.stringify({ ok: false, error: 'unknown_action' }), {
     status: 422,
     headers: { ...cors, 'Content-Type': 'application/json' },

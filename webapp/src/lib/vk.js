@@ -64,6 +64,29 @@ export async function getVkLaunchParams() {
   }
 }
 
+export async function resolveOrCreateVkProfile() {
+  const params = await getVkLaunchParams()
+  const vkUserId = Number(params.vk_user_id)
+  if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
+  if (!params.sign) return { ok: false, error: 'no_vk_sign' }
+
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vk-auth`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      action: 'resolve_or_create',
+      params,
+    }),
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, error: json.error || 'resolve_failed' }
+  return { ok: true, ...json }
+}
+
 export async function linkVkAccount(telegramId) {
   const params = await getVkLaunchParams()
   const vkUserId = Number(params.vk_user_id)
