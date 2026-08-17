@@ -9,7 +9,7 @@ import { fetchBusinessServices } from './lib/services'
 import { fetchMasterAnalytics } from './lib/analytics'
 import { getSavedRole, setSavedRole } from './lib/role'
 import { WebApp, isTelegramEnvironment } from './lib/telegram'
-import { isVkEnvironment } from './lib/vk'
+import { isVkEnvironment, getVkUserInfo } from './lib/vk'
 import { resolveCurrentProfile, getTelegramIdentity, getVkIdentity } from './lib/identity'
 import { hideBootSplash } from './lib/bootSplash'
 import AppShell, { SkeletonBlock } from './components/AppShell'
@@ -387,7 +387,12 @@ function App() {
           try {
             const ensured = await withTimeout(resolveCurrentProfile(), BOOT_MS)
             nextProfile = ensured
-            if (!cancelled && nextProfile) {
+            if (nextProfile && !cancelled) {
+              const vkName = await getVkUserInfo()
+              const fullName = [vkName?.first_name, vkName?.last_name].filter(Boolean).join(' ').trim()
+              if (fullName) {
+                nextProfile = { ...nextProfile, full_name: fullName }
+              }
               setUserName(nextProfile.full_name || `VK ${nextProfile.vk_id}`)
             }
           } catch (err) {
