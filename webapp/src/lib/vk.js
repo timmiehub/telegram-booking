@@ -111,6 +111,15 @@ export async function createVkLinkCode() {
   return { ok: true, ...json }
 }
 
+export function openVkMiniApp(telegramId) {
+  const url = `https://vk.com/app54724722?tg=${telegramId}`
+  if (vkBridge?.send) {
+    vkBridge.send('VKWebAppOpenLink', { url })
+  } else {
+    window.open(url, '_blank')
+  }
+}
+
 export function openTelegramForVkLink(code) {
   const url = `https://t.me/booking_inapp_bot?start=link_${code}`
   if (vkBridge?.send) {
