@@ -74,7 +74,7 @@ export default function VkLink() {
       {status === 'connect' ? (
         <button
           type="button"
-          className="btn mt-4"
+          className="btn btn-primary mt-6 min-w-[220px]"
           onClick={handleConnectTelegram}
         >
           Подключить Telegram
