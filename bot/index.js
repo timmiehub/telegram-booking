@@ -62,6 +62,8 @@ const EXTERNAL_TTL_MS = 10 * 60_000
 
 const BOT_TOKEN = process.env.BOT_TOKEN
 const WEBAPP_URL = process.env.WEBAPP_URL || ''
+const SUPABASE_URL = process.env.SUPABASE_URL || ''
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || ''
 
 if (!BOT_TOKEN) {
   logger.error('Ошибка: не задан BOT_TOKEN в файле .env')
@@ -409,6 +411,40 @@ bot.start(async (ctx) => {
 
   if (/^external$/i.test(payload)) {
     await startExternalBookingFlow(ctx)
+    return
+  }
+
+  const linkMatch = payload.match(/^link_([A-Za-z0-9]+)$/i)
+  if (linkMatch) {
+    const code = linkMatch[1]
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      await ctx.reply('Сервис временно недоступен. Попробуйте позже.')
+      return
+    }
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/vk-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          action: 'consume_link_code',
+          code,
+          telegram_id: ctx.from.id,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.ok) {
+        await ctx.reply('VK подключён. Записи и профиль синхронизированы.')
+      } else {
+        await ctx.reply(`Не удалось подключить VK: ${json.error || 'unknown'}`)
+      }
+    } catch (err) {
+      logger.error('vk link consume error', err)
+      await ctx.reply('Ошибка при подключении VK. Попробуйте позже.')
+    }
     return
   }
 

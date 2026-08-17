@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { isVkEnvironment, getTelegramIdFromVk, linkVkAccount } from '../lib/vk'
+import {
+  isVkEnvironment,
+  getTelegramIdFromVk,
+  linkVkAccount,
+  createVkLinkCode,
+  openTelegramForVkLink,
+} from '../lib/vk'
 import { haptic } from '../hooks/useTelegramChrome'
 
 export default function VkLink() {
@@ -15,8 +21,8 @@ export default function VkLink() {
 
     const tgId = getTelegramIdFromVk()
     if (!tgId) {
-      setStatus('error')
-      setMessage('Не удалось определить Telegram ID. Откройте ссылку из Telegram.')
+      setStatus('connect')
+      setMessage('Это Mini App. Запустите бота и нажмите кнопку приложения.')
       return
     }
 
@@ -35,9 +41,25 @@ export default function VkLink() {
     run()
   }, [])
 
+  const handleConnectTelegram = async () => {
+    setStatus('loading')
+    setMessage('Создаём одноразовую ссылку...')
+    const result = await createVkLinkCode()
+    if (!result.ok) {
+      haptic('error')
+      setStatus('error')
+      setMessage(result.error || 'Ошибка создания ссылки')
+      return
+    }
+    haptic('light')
+    setStatus('success')
+    setMessage('Открываем Telegram...')
+    openTelegramForVkLink(result.code)
+  }
+
   return (
-    <section className="stagger p-4 text-center">
-      <h2 className="text-xl font-semibold mb-3">Подключение VK</h2>
+    <section className="stagger p-4 text-center flex min-h-screen flex-col items-center justify-center gap-4">
+      <h2 className="text-xl font-semibold">{status === 'connect' ? 'Подключение Telegram' : 'VK'}</h2>
       <p
         className={`text-sm ${
           status === 'success'
@@ -49,6 +71,15 @@ export default function VkLink() {
       >
         {message}
       </p>
+      {status === 'connect' ? (
+        <button
+          type="button"
+          className="btn mt-4"
+          onClick={handleConnectTelegram}
+        >
+          Подключить Telegram
+        </button>
+      ) : null}
     </section>
   )
 }

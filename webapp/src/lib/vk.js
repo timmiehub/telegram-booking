@@ -88,10 +88,11 @@ export async function linkVkAccount(telegramId) {
   return { ok: true, ...json }
 }
 
-export async function resolveVkProfile() {
+export async function createVkLinkCode() {
   const params = await getVkLaunchParams()
   const vkUserId = Number(params.vk_user_id)
   if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
+  if (!params.sign) return { ok: false, error: 'no_vk_sign' }
 
   const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vk-auth`, {
     method: 'POST',
@@ -100,30 +101,21 @@ export async function resolveVkProfile() {
       apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
     },
     body: JSON.stringify({
-      action: 'resolve',
+      action: 'create_link_code',
       params,
     }),
   })
 
   const json = await res.json().catch(() => ({}))
-  if (!res.ok) return { ok: false, error: json.error || 'resolve_failed' }
+  if (!res.ok) return { ok: false, error: json.error || 'create_failed' }
   return { ok: true, ...json }
 }
 
-function safeOpenExternal(url) {
-  try {
-    if (WebApp.openLink) {
-      const options = { try_instant_view: false }
-      const unsafe = WebApp.openLink
-      return unsafe(url, options)
-    }
-  } catch (err) {
-    console.warn('openLink failed', err)
+export function openTelegramForVkLink(code) {
+  const url = `https://t.me/booking_inapp_bot?start=link_${code}`
+  if (vkBridge?.send) {
+    vkBridge.send('VKWebAppOpenLink', { url })
+  } else {
+    window.open(url, '_blank')
   }
-  window.open(url, '_blank')
-}
-
-export function openVkMiniApp(telegramId) {
-  const url = `https://vk.com/app54724722?tg=${telegramId}`
-  safeOpenExternal(url)
 }

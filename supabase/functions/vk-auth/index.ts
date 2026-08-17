@@ -26,10 +26,6 @@ async function hmacSha256B64(message: string, secret: string) {
   return b64
 }
 
-/**
- * Проверка подписи launch params VK Mini App.
- * Алгоритм: https://dev.vk.com/mini-apps/development/launch-params-sign
- */
 async function verifyVkMiniAppSign(params: Record<string, string>, secret: string) {
   const vkParams: Record<string, string> = {}
   for (const [k, v] of Object.entries(params)) {
@@ -41,9 +37,17 @@ async function verifyVkMiniAppSign(params: Record<string, string>, secret: strin
   return params.sign === expected
 }
 
-/** Legacy auth_key из standalone/OAuth (md5(app_id + '_' + user_id + '_' + secret)). */
 function verifyVkAuthKey(vkUserId: number, sign: string, secret: string) {
   return sign === md5(`${APP_ID}_${vkUserId}_${secret}`)
+}
+
+function assertSign(params: Record<string, string>, vkSecret: string) {
+  const vkUserId = Number(params.vk_user_id)
+  if (!Number.isFinite(vkUserId) || !params.sign) return { ok: false, error: 'bad_vk_params' }
+  const isMiniAppSign = verifyVkMiniAppSign(params, vkSecret)
+  const isAuthKey = verifyVkAuthKey(vkUserId, params.sign, vkSecret)
+  if (!isMiniAppSign && !isAuthKey) return { ok: false, error: 'bad_sign' }
+  return { ok: true, vkUserId }
 }
 
 Deno.serve(async (req) => {
@@ -83,29 +87,6 @@ Deno.serve(async (req) => {
     })
   }
 
-  const action = String(body.action || '')
-  const params = (body.params as Record<string, string>) || {}
-  const vkUserId = Number(params.vk_user_id || body.vk_user_id)
-  const sign = String(params.sign || body.sign || '')
-  const telegramId = Number(body.telegram_id)
-
-  if (!Number.isFinite(vkUserId) || !sign) {
-    return new Response(JSON.stringify({ ok: false, error: 'bad_vk_params' }), {
-      status: 422,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    })
-  }
-
-  const isMiniAppSign = await verifyVkMiniAppSign(params, vkSecret)
-  const isAuthKey = verifyVkAuthKey(vkUserId, sign, vkSecret)
-
-  if (!isMiniAppSign && !isAuthKey) {
-    return new Response(JSON.stringify({ ok: false, error: 'bad_sign' }), {
-      status: 401,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    })
-  }
-
   const supabaseHeaders = {
     Authorization: `Bearer ${serviceKey}`,
     apikey: serviceKey,
@@ -121,21 +102,29 @@ Deno.serve(async (req) => {
     return data
   }
 
-  if (action === 'link' && Number.isFinite(telegramId)) {
+  const action = String(body.action || '')
+
+  // action: link — Telegram -> VK (direct, mini app passes vk params + telegram_id)
+  if (action === 'link') {
+    const params = (body.params as Record<string, string>) || {}
+    const signRes = assertSign(params, vkSecret)
+    if (!signRes.ok) {
+      return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+    const vkUserId = signRes.vkUserId
+    const telegramId = Number(body.telegram_id)
+    if (!Number.isFinite(telegramId)) {
+      return new Response(JSON.stringify({ ok: false, error: 'bad_telegram_id' }), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
     const existing = await rest(`/profiles?select=id&vk_id=eq.${vkUserId}&limit=1`)
     if (existing?.length) {
-      return new Response(JSON.stringify({ ok: false, error: 'vk_already_linked' }), {
-        status: 409,
-        headers: { ...cors, 'Content-Type': 'application/json' },
-      })
+      return new Response(JSON.stringify({ ok: false, error: 'vk_already_linked' }), { status: 409, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
 
     const profile = await rest(`/profiles?select=id&telegram_id=eq.${telegramId}&limit=1`)
     if (!profile?.length) {
-      return new Response(JSON.stringify({ ok: false, error: 'profile_not_found' }), {
-        status: 422,
-        headers: { ...cors, 'Content-Type': 'application/json' },
-      })
+      return new Response(JSON.stringify({ ok: false, error: 'profile_not_found' }), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
 
     const updated = await rest(`/profiles?id=eq.${profile[0].id}`, {
@@ -149,9 +138,91 @@ Deno.serve(async (req) => {
     })
   }
 
+  // action: resolve — find profile by vk_id
   if (action === 'resolve') {
+    const params = (body.params as Record<string, string>) || {}
+    const signRes = assertSign(params, vkSecret)
+    if (!signRes.ok) {
+      return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+    const vkUserId = signRes.vkUserId
     const profile = await rest(`/profiles?select=id,telegram_id,full_name,role&vk_id=eq.${vkUserId}&limit=1`)
     return new Response(JSON.stringify({ ok: true, profile: profile?.[0] || null }), {
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // action: create_link_code — VK -> Telegram flow
+  if (action === 'create_link_code') {
+    const params = (body.params as Record<string, string>) || {}
+    const signRes = assertSign(params, vkSecret)
+    if (!signRes.ok) {
+      return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+    const vkUserId = signRes.vkUserId
+
+    const code = crypto.randomUUID().replace(/-/g, '')
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
+
+    await rest('/vk_link_tokens', {
+      method: 'POST',
+      headers: supabaseHeaders,
+      body: JSON.stringify({
+        code,
+        vk_id: vkUserId,
+        sign: params.sign,
+        expires_at: expiresAt,
+      }),
+    })
+
+    return new Response(JSON.stringify({ ok: true, code, vk_id: vkUserId, expires_at: expiresAt }), {
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    })
+  }
+
+  // action: consume_link_code — Telegram bot uses code to link VK
+  if (action === 'consume_link_code') {
+    const code = String(body.code || '')
+    const telegramId = Number(body.telegram_id)
+    if (!code) return new Response(JSON.stringify({ ok: false, error: 'no_code' }), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+    if (!Number.isFinite(telegramId)) return new Response(JSON.stringify({ ok: false, error: 'bad_telegram_id' }), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
+
+    const token = await rest(`/vk_link_tokens?select=code,vk_id,used,expires_at&code=eq.${encodeURIComponent(code)}&limit=1`)
+    if (!token?.length) return new Response(JSON.stringify({ ok: false, error: 'code_not_found' }), { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } })
+
+    const t = token[0]
+    if (t.used) return new Response(JSON.stringify({ ok: false, error: 'code_used' }), { status: 409, headers: { ...cors, 'Content-Type': 'application/json' } })
+    if (new Date(t.expires_at).getTime() < Date.now()) {
+      return new Response(JSON.stringify({ ok: false, error: 'code_expired' }), { status: 410, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
+    const existingVk = await rest(`/profiles?select=id&vk_id=eq.${t.vk_id}&limit=1`)
+    if (existingVk?.length) {
+      return new Response(JSON.stringify({ ok: false, error: 'vk_already_linked' }), { status: 409, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
+    const profile = await rest(`/profiles?select=id,vk_id&telegram_id=eq.${telegramId}&limit=1`)
+    if (!profile?.length) {
+      return new Response(JSON.stringify({ ok: false, error: 'profile_not_found' }), { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
+    if (profile[0].vk_id && Number(profile[0].vk_id) !== Number(t.vk_id)) {
+      return new Response(JSON.stringify({ ok: false, error: 'telegram_already_linked' }), { status: 409, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
+    await rest(`/profiles?id=eq.${profile[0].id}`, {
+      method: 'PATCH',
+      headers: supabaseHeaders,
+      body: JSON.stringify({ vk_id: t.vk_id }),
+    })
+
+    await rest(`/vk_link_tokens?code=eq.${encodeURIComponent(code)}`, {
+      method: 'PATCH',
+      headers: supabaseHeaders,
+      body: JSON.stringify({ used: true }),
+    })
+
+    return new Response(JSON.stringify({ ok: true, profile_id: profile[0].id, vk_id: t.vk_id }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
