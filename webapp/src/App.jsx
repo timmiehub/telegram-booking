@@ -701,6 +701,7 @@ function App() {
     screen = (
       <RoleGate
         userName={userName}
+        profile={profile}
         onPickClient={pickClient}
         onPickMaster={pickMaster}
       />
