@@ -51,7 +51,29 @@ export default function RoleGate({
           Сверху — коротко, что умеем и что даёт Pro.
         </p>
 
-        <div className="mt-6 flex flex-col gap-3 stagger">
+        {isVkOnly ? (
+          <div className="mt-4 flex flex-col gap-2 w-full max-w-[300px]">
+            <div className="card px-3 py-3 text-center">
+              <p className="text-xs text-[var(--brand-muted)]">
+                Это профиль ВК. Чтобы подтянуть кабинет/записи из Telegram:
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary w-full mt-2"
+                onClick={handleConnectTelegram}
+              >
+                Подключить Telegram
+              </button>
+              {linkStatus ? (
+                <p className="text-xs text-[var(--brand-muted)] text-center mt-2">
+                  {linkStatus}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-4 flex flex-col gap-3 stagger">
           <button
             type="button"
             className="pressable role-gate-btn role-gate-btn-primary"
