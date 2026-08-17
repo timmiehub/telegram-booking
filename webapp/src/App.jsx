@@ -224,7 +224,7 @@ function App() {
   function maybeOfferProGift(grant) {
     const user = tgUser()
     const tid = user?.id
-    if (!grant || hasSeenProGift(tid)) return
+    if (!grant || !tid || hasSeenProGift(tid)) return
     setProGift(grant)
   }
 
@@ -736,6 +736,7 @@ function App() {
         <Suspense fallback={<CabinetFallback />}>
           <OnboardBusiness
             profileId={profile.id}
+            profile={profile}
             btnClass={btnClass}
             onCancel={() => switchRole()}
             onDone={afterOnboard}
@@ -757,6 +758,7 @@ function App() {
         <ShareReady
           businessName={business?.name || theme.business_name}
           businessSlug={businessSlug || business?.slug}
+          profile={profile}
           btnClass={btnClass}
           onContinue={finishShareReady}
           hasCustomAvatar={hasCustomAvatar}

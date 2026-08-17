@@ -26,7 +26,7 @@ function newCartItem(preset) {
   }
 }
 
-export default function OnboardBusiness({ profileId, btnClass, onDone, onCancel }) {
+export default function OnboardBusiness({ profileId, profile, btnClass, onDone, onCancel }) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
@@ -151,7 +151,7 @@ export default function OnboardBusiness({ profileId, btnClass, onDone, onCancel 
     setError('')
     captureGrowthAttributionFromContext()
     const attr = readGrowthAttribution()
-    const ownerTg = WebApp.initDataUnsafe?.user?.id ?? null
+    const ownerTg = profile?.telegram_id ?? null
     const result = await createBusiness({
       name: name.trim(),
       type,

@@ -25,7 +25,7 @@ export async function fetchDayBookings(masterId, day = dayOffset(0)) {
   const { data, error } = await supabase
     .from('bookings')
     .select(
-      'id, starts_at, ends_at, status, price_cents, currency, client_telegram_id, external_source, service_id, services(title, duration_min)',
+      'id, starts_at, ends_at, status, price_cents, currency, client_id, client_telegram_id, client_vk_id, external_source, service_id, services(title, duration_min)',
     )
     .eq('master_id', masterId)
     .gte('starts_at', start.toISOString())
@@ -80,38 +80,47 @@ export async function fetchBookingDayCounts(masterId, fromDate, toDate) {
 /** Подтянуть @username / имя клиента из profiles */
 export async function attachClientLabels(rows) {
   if (!supabase || !rows?.length) return rows || []
-  const ids = [
-    ...new Set(
-      rows.map((r) => r.client_telegram_id).filter((id) => id != null && id !== ''),
-    ),
-  ]
-  if (!ids.length) {
+
+  // Подбираем client_id и telegram_id — покрываем и TG, и VK
+  const profileIds = []
+  const tgIds = []
+  for (const r of rows) {
+    if (r.client_id) profileIds.push(r.client_id)
+    if (r.client_telegram_id) tgIds.push(r.client_telegram_id)
+  }
+
+  if (!profileIds.length && !tgIds.length) {
     return rows.map((r) => ({ ...r, client_label: null }))
   }
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('telegram_id, username, full_name')
-    .in('telegram_id', ids)
-
-  if (error) {
-    console.warn('client labels:', error.message)
-    return rows.map((r) => ({
-      ...r,
-      client_label: r.client_telegram_id ? `TG ${r.client_telegram_id}` : null,
-    }))
+  let data = []
+  if (profileIds.length) {
+    const res = await supabase
+      .from('profiles')
+      .select('id, telegram_id, vk_id, username, full_name')
+      .in('id', [...new Set(profileIds)])
+    if (res.error) console.warn('client labels by id:', res.error.message)
+    data = res.data || []
+  }
+  if (tgIds.length) {
+    const res = await supabase
+      .from('profiles')
+      .select('id, telegram_id, vk_id, username, full_name')
+      .in('telegram_id', [...new Set(tgIds)])
+    if (res.error) console.warn('client labels by tg:', res.error.message)
+    data = [...data, ...(res.data || [])]
   }
 
-  const map = new Map(
-    (data || []).map((p) => [String(p.telegram_id), p]),
-  )
+  const byId = new Map((data || []).map((p) => [String(p.id), p]))
+  const byTg = new Map((data || []).map((p) => (p.telegram_id ? [String(p.telegram_id), p] : null)).filter(Boolean))
 
   return rows.map((r) => {
-    const p = map.get(String(r.client_telegram_id))
+    const p = r.client_id ? byId.get(String(r.client_id)) : byTg.get(String(r.client_telegram_id))
     let label = null
     if (p?.username) label = `@${p.username}`
     else if (p?.full_name) label = p.full_name
     else if (r.client_telegram_id) label = `TG ${r.client_telegram_id}`
+    else if (r.client_vk_id) label = `VK ${r.client_vk_id}`
     return { ...r, client_label: label }
   })
 }

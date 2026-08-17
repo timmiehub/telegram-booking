@@ -20,6 +20,7 @@ export default function MyBookings({
   masterId,
   businessId = null,
   businessSlug = null,
+  profile = null,
   onBack,
   onBookAgain,
 }) {
@@ -34,13 +35,13 @@ export default function MyBookings({
   const [chatBusy, setChatBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const tgId = WebApp.initDataUnsafe?.user?.id ?? null
+  const clientProfileId = profile?.id ?? null
 
   async function load() {
     setLoading(true)
     const [data, history] = await Promise.all([
-      fetchClientBookings(masterId, tgId),
-      fetchClientPastBookings(tgId, 50),
+      fetchClientBookings(masterId, clientProfileId),
+      fetchClientPastBookings(clientProfileId, 50),
     ])
     setRows(data)
     setPast(history.filter((b) => b.master_id === masterId))
@@ -49,7 +50,7 @@ export default function MyBookings({
 
   async function onHidePast(id) {
     setPendingId(id)
-    const result = await hideClientBooking(id, tgId)
+    const result = await hideClientBooking(id, clientProfileId)
     setPendingId(null)
     if (!result.ok) {
       setError(result.error || 'Не удалось скрыть')
@@ -61,13 +62,13 @@ export default function MyBookings({
 
   useEffect(() => {
     load()
-  }, [masterId, tgId])
+  }, [masterId, clientProfileId])
 
   async function onConfirmCancel(id) {
     setCancelError('')
     setError('')
     setPendingId(id)
-    const result = await cancelClientBooking(id, tgId)
+    const result = await cancelClientBooking(id, clientProfileId)
     setPendingId(null)
     if (!result.ok) {
       setCancelError(result.error || 'Не удалось отменить')
@@ -121,7 +122,7 @@ export default function MyBookings({
 
       {rescheduleBooking ? (
         <ReschedulePanel
-          booking={{ ...rescheduleBooking, master_id: masterId, client_telegram_id: tgId }}
+          booking={{ ...rescheduleBooking, master_id: masterId, client_telegram_id: profile?.telegram_id, client_id: clientProfileId }}
           businessId={businessId || rescheduleBooking.business_id}
           onDone={() => {
             setRescheduleId(null)
@@ -131,9 +132,9 @@ export default function MyBookings({
         />
       ) : null}
 
-      {!tgId ? (
+      {!clientProfileId ? (
         <p className="text-sm text-[var(--brand-muted)]">
-          Откройте Mini App из Telegram, чтобы увидеть свои записи.
+          Профиль не найден. Откройте из Telegram или VK.
         </p>
       ) : rows.length === 0 ? (
         <EmptyState

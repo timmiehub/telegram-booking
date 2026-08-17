@@ -12,6 +12,7 @@ import { WebApp } from '../lib/telegram'
 export default function ShareReady({
   businessName,
   businessSlug,
+  profile,
   btnClass,
   onContinue,
   hasCustomAvatar = false,
@@ -20,7 +21,7 @@ export default function ShareReady({
   const pack = growthCopyPack(
     businessName,
     businessSlug,
-    WebApp.initDataUnsafe?.user?.id || null,
+    profile?.telegram_id || null,
   )
   const deep = buildClientBookingLink(businessSlug)
   const [toast, setToast] = useState('')
