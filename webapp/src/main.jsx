@@ -4,6 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { hideBootSplash } from './lib/bootSplash.js'
+import { initVkBridge, isVkEnvironment } from './lib/vk.js'
+
+if (isVkEnvironment()) {
+  initVkBridge()
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

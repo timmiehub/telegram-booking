@@ -1,17 +1,6 @@
 import { WebApp } from './telegram'
 
-function safeOpenExternal(url) {
-  try {
-    if (WebApp.openLink) {
-      const options = { try_instant_view: false }
-      const unsafe = WebApp.openLink
-      return unsafe(url, options)
-    }
-  } catch (err) {
-    console.warn('openLink failed', err)
-  }
-  window.open(url, '_blank')
-}
+let vkBridge = null
 
 export function isVkEnvironment() {
   try {
@@ -22,6 +11,26 @@ export function isVkEnvironment() {
   } catch {
     return false
   }
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export async function initVkBridge() {
+  if (!isVkEnvironment()) return null
+  try {
+    const { default: bridge } = await import('@vkontakte/vk-bridge')
+    vkBridge = bridge
+    await Promise.race([bridge.send('VKWebAppInit'), wait(1500)])
+  } catch (err) {
+    console.warn('VK Bridge init skipped', err)
+  }
+  return vkBridge
+}
+
+export function getVkBridge() {
+  return vkBridge
 }
 
 function getAllVkParams() {
@@ -43,8 +52,20 @@ export function getTelegramIdFromVk() {
   return m ? Number(m[1]) : null
 }
 
+export async function getVkLaunchParams() {
+  const fromUrl = getAllVkParams()
+  if (fromUrl.vk_user_id && fromUrl.sign) return fromUrl
+  if (!vkBridge) return fromUrl
+  try {
+    const params = await Promise.race([vkBridge.send('VKWebAppGetLaunchParams'), wait(2000)])
+    return { ...fromUrl, ...(params || {}) }
+  } catch {
+    return fromUrl
+  }
+}
+
 export async function linkVkAccount(telegramId) {
-  const params = getAllVkParams()
+  const params = await getVkLaunchParams()
   const vkUserId = Number(params.vk_user_id)
   if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
   if (!params.sign) return { ok: false, error: 'no_vk_sign' }
@@ -68,7 +89,7 @@ export async function linkVkAccount(telegramId) {
 }
 
 export async function resolveVkProfile() {
-  const params = getAllVkParams()
+  const params = await getVkLaunchParams()
   const vkUserId = Number(params.vk_user_id)
   if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
 
@@ -87,6 +108,19 @@ export async function resolveVkProfile() {
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return { ok: false, error: json.error || 'resolve_failed' }
   return { ok: true, ...json }
+}
+
+function safeOpenExternal(url) {
+  try {
+    if (WebApp.openLink) {
+      const options = { try_instant_view: false }
+      const unsafe = WebApp.openLink
+      return unsafe(url, options)
+    }
+  } catch (err) {
+    console.warn('openLink failed', err)
+  }
+  window.open(url, '_blank')
 }
 
 export function openVkMiniApp(telegramId) {
