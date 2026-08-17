@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { isVkEnvironment, getTelegramIdFromHash, linkVkAccount } from '../lib/vk'
+import { isVkEnvironment, getTelegramIdFromVk, linkVkAccount } from '../lib/vk'
 import { haptic } from '../hooks/useTelegramChrome'
 
 export default function VkLink() {
@@ -13,7 +13,7 @@ export default function VkLink() {
       return
     }
 
-    const tgId = getTelegramIdFromHash()
+    const tgId = getTelegramIdFromVk()
     if (!tgId) {
       setStatus('error')
       setMessage('Не удалось определить Telegram ID. Откройте ссылку из Telegram.')

@@ -21,7 +21,10 @@ function getAllVkParams() {
   return params
 }
 
-export function getTelegramIdFromHash() {
+export function getTelegramIdFromVk() {
+  const params = new URLSearchParams(window.location.search)
+  const tg = params.get('tg')
+  if (tg) return Number(tg)
   const hash = String(window.location.hash || '').replace(/^#/, '')
   const m = hash.match(/(?:^|&)tg_(\d+)/)
   return m ? Number(m[1]) : null
@@ -74,7 +77,7 @@ export async function resolveVkProfile() {
 }
 
 export function openVkMiniApp(telegramId) {
-  const url = `https://m.vk.com/app54724722#tg_${telegramId}`
+  const url = `https://m.vk.com/app54724722?tg=${telegramId}`
   if (WebApp.openLink) {
     WebApp.openLink(url)
   } else {
