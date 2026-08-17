@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(signRes), { status: 422, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
     const vkUserId = signRes.vkUserId
-    const profile = await rest(`/profiles?select=id,telegram_id,full_name,role&vk_id=eq.${vkUserId}&limit=1`)
+    const profile = await rest(`/profiles?select=id,telegram_id,vk_id,full_name,username,role,slug,business_name&vk_id=eq.${vkUserId}&limit=1`)
     return new Response(JSON.stringify({ ok: true, profile: profile?.[0] || null }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
@@ -238,17 +238,17 @@ Deno.serve(async (req) => {
     }
     const vkUserId = signRes.vkUserId
 
-    const existing = await rest(`/profiles?select=id,telegram_id,full_name,role&vk_id=eq.${vkUserId}&limit=1`)
+    const existing = await rest(`/profiles?select=id,telegram_id,vk_id,full_name,username,role,slug,business_name&vk_id=eq.${vkUserId}&limit=1`)
     if (existing?.length) {
       return new Response(JSON.stringify({ ok: true, profile: existing[0], created: false }), {
         headers: { ...cors, 'Content-Type': 'application/json' },
       })
     }
 
-    const firstName = params.vk_first_name || ''
-    const lastName = params.vk_last_name || ''
+    const firstName = body.first_name || params.vk_first_name || ''
+    const lastName = body.last_name || params.vk_last_name || ''
     const fullName = `${firstName} ${lastName}`.trim() || null
-    const username = params.vk_username || null
+    const username = body.username || params.vk_username || null
 
     const inserted = await rest('/profiles', {
       method: 'POST',

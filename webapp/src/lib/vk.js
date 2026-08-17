@@ -64,7 +64,7 @@ export async function getVkLaunchParams() {
   }
 }
 
-export async function resolveOrCreateVkProfile() {
+export async function resolveVkProfile() {
   const params = await getVkLaunchParams()
   const vkUserId = Number(params.vk_user_id)
   if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
@@ -77,7 +77,7 @@ export async function resolveOrCreateVkProfile() {
       apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
     },
     body: JSON.stringify({
-      action: 'resolve_or_create',
+      action: 'resolve',
       params,
     }),
   })
@@ -85,6 +85,48 @@ export async function resolveOrCreateVkProfile() {
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return { ok: false, error: json.error || 'resolve_failed' }
   return { ok: true, ...json }
+}
+
+export async function getVkUserInfo() {
+  if (!vkBridge) return null
+  try {
+    const user = await Promise.race([vkBridge.send('VKWebAppGetUserInfo'), wait(2000)])
+    return user || null
+  } catch {
+    return null
+  }
+}
+
+export async function createVkProfile() {
+  const params = await getVkLaunchParams()
+  const vkUserId = Number(params.vk_user_id)
+  if (!Number.isFinite(vkUserId)) return { ok: false, error: 'no_vk_user' }
+  if (!params.sign) return { ok: false, error: 'no_vk_sign' }
+
+  const userInfo = await getVkUserInfo()
+
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vk-auth`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({
+      action: 'resolve_or_create',
+      params,
+      first_name: userInfo?.first_name || '',
+      last_name: userInfo?.last_name || '',
+      username: userInfo?.screen_name || userInfo?.domain || '',
+    }),
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, error: json.error || 'create_failed' }
+  return { ok: true, ...json }
+}
+
+export async function resolveOrCreateVkProfile() {
+  return createVkProfile()
 }
 
 export async function linkVkAccount(telegramId) {
