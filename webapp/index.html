@@ -122,6 +122,24 @@
           if (el && el.parentNode) el.parentNode.removeChild(el)
         }, 400)
       }
+      function showBootError(msg) {
+        var el = document.getElementById('boot-splash')
+        if (!el) return
+        var sub = el.querySelector('.sub')
+        if (sub) sub.textContent = msg
+        el.querySelector('.bar').style.display = 'none'
+      }
+      window.addEventListener('error', function (e) {
+        showBootError('Ошибка: ' + (e.message || 'load failed'))
+      })
+      window.addEventListener('unhandledrejection', function (e) {
+        showBootError('Ошибка: ' + (e.reason?.message || e.reason || 'rejected'))
+      })
+      setTimeout(function () {
+        if (!document.getElementById('root').hasChildNodes()) {
+          showBootError('JS не загрузился. Проверьте консоль.')
+        }
+      }, 8000)
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
