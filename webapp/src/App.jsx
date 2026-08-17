@@ -386,17 +386,31 @@ function App() {
         } else if (isVkEnvironment()) {
           try {
             const ensured = await withTimeout(resolveCurrentProfile(), BOOT_MS)
-            nextProfile = ensured
-            if (nextProfile && !cancelled) {
-              const vkName = await getVkUserInfo()
-              const fullName = [vkName?.first_name, vkName?.last_name].filter(Boolean).join(' ').trim()
-              if (fullName) {
-                nextProfile = { ...nextProfile, full_name: fullName }
+            if (ensured) {
+              nextProfile = ensured
+              if (!cancelled) {
+                const vkName = await getVkUserInfo()
+                const fullName = [vkName?.first_name, vkName?.last_name].filter(Boolean).join(' ').trim()
+                if (fullName) {
+                  nextProfile = { ...nextProfile, full_name: fullName }
+                }
+                setUserName(nextProfile.full_name || `VK ${nextProfile.vk_id}`)
               }
-              setUserName(nextProfile.full_name || `VK ${nextProfile.vk_id}`)
+            } else {
+              // Профиль не найден — покажем VkLink для выбора
+              if (!cancelled) {
+                setMode('vk-link')
+                finishReady({ outside: false })
+                return
+              }
             }
           } catch (err) {
             logger.warn('vk profile/memberships boot:', err?.message || err)
+            if (!cancelled) {
+              setMode('vk-link')
+              finishReady({ outside: false })
+              return
+            }
           }
         } else if (!cancelled) {
           setUserName(allowDevPreview ? 'Гость (dev)' : 'Гость')
@@ -851,7 +865,26 @@ function App() {
   } else if (mode === 'vk-link') {
     screen = (
       <Suspense fallback={<CabinetFallback />}>
-        <VkLink />
+        <VkLink
+          onProfile={async (p) => {
+            setProfile(p)
+            setUserName(p?.full_name || `VK ${p?.vk_id || ''}`)
+            const mems = await fetchMemberships(p?.id)
+            setMemberships(mems)
+            if (mems.length > 0) {
+              const slug = mems[0]?.businesses?.slug
+              if (slug) {
+                const loaded = await loadBusiness(slug)
+                setMode('cabinet')
+                setCabinetTab('today')
+              } else {
+                setMode('cabinet')
+              }
+            } else {
+              setMode('role-gate')
+            }
+          }}
+        />
       </Suspense>
     )
   } else if (mode === 'client') {
