@@ -26,6 +26,8 @@ create type public.button_style as enum ('solid', 'outline', 'soft', 'pill');
 create table public.profiles (
   id uuid primary key default gen_random_uuid(),
   telegram_id bigint unique not null,
+  -- Привязка VK-аккаунта к тому же профилю (клиент подключает VK из Telegram Mini App)
+  vk_id bigint unique,
   username text,
   full_name text,
   role public.user_role not null default 'client',
@@ -43,6 +45,7 @@ create table public.profiles (
 
 create index profiles_role_idx on public.profiles (role);
 create index profiles_slug_idx on public.profiles (slug);
+create index profiles_vk_id_idx on public.profiles (vk_id);
 
 -- ---------------------------------------------------------------------------
 -- White Label: тема UI мастера
@@ -103,6 +106,7 @@ create table public.bookings (
   currency text not null default 'RUB',
   -- Для retention: повторные визиты одного клиента
   client_telegram_id bigint,
+  client_vk_id bigint,
   notes text,
   cancelled_at timestamptz,
   reminded_24h boolean not null default false,
@@ -118,6 +122,7 @@ create index bookings_master_starts_idx on public.bookings (master_id, starts_at
 create index bookings_master_status_idx on public.bookings (master_id, status);
 create index bookings_client_idx on public.bookings (client_id);
 create index bookings_client_tg_idx on public.bookings (client_telegram_id);
+create index bookings_client_vk_idx on public.bookings (client_vk_id);
 create index bookings_starts_at_idx on public.bookings (starts_at);
 
 -- ---------------------------------------------------------------------------
