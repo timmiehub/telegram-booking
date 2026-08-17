@@ -9,6 +9,7 @@ import { fetchBusinessServices } from './lib/services'
 import { fetchMasterAnalytics } from './lib/analytics'
 import { getSavedRole, setSavedRole } from './lib/role'
 import { WebApp, isTelegramEnvironment } from './lib/telegram'
+import { isVkEnvironment } from './lib/vk'
 import { hideBootSplash } from './lib/bootSplash'
 import AppShell, { SkeletonBlock } from './components/AppShell'
 import RoleGate from './screens/RoleGate'
@@ -21,6 +22,7 @@ const ClientHome = lazy(() => import('./screens/ClientHome'))
 const BookingFlow = lazy(() => import('./screens/BookingFlow'))
 const OnboardBusiness = lazy(() => import('./screens/OnboardBusiness'))
 const ShareReady = lazy(() => import('./screens/ShareReady'))
+const VkLink = lazy(() => import('./screens/VkLink'))
 
 function initTelegramSdkSafely() {
   try {
@@ -73,6 +75,9 @@ function resolveInitialBookingStep(members) {
 
 /** Явные view из бота; deeplink → сразу запись */
 function resolveBootRoute({ canOpenCabinet, savedRole, hasDeeplink, inviteCode }) {
+  if (isVkEnvironment()) {
+    return { mode: 'vk-link' }
+  }
   const view = new URLSearchParams(window.location.search).get('view')
   if (view === 'join' || inviteCode) {
     return {
@@ -827,6 +832,12 @@ function App() {
         </Suspense>
       )
     }
+  } else if (mode === 'vk-link') {
+    screen = (
+      <Suspense fallback={<CabinetFallback />}>
+        <VkLink />
+      </Suspense>
+    )
   } else if (mode === 'client') {
     screen = (
       <Suspense fallback={<CabinetFallback />}>

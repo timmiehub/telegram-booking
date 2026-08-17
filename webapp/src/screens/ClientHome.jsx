@@ -27,6 +27,7 @@ import Icon from '../components/Icon'
 import ProBadge from '../components/ProBadge'
 import { haptic, useTelegramChrome } from '../hooks/useTelegramChrome'
 import { WebApp } from '../lib/telegram'
+import { openVkMiniApp } from '../lib/vk'
 import { formatTrustLine } from '../lib/trust'
 import { buildLateModifyMessage, openMasterChat } from '../lib/contacts'
 
@@ -288,6 +289,18 @@ export default function ClientHome({
         <h1 className="display mt-1 text-2xl font-extrabold leading-tight">
           {userName ? `Привет, ${userName.split(' ')[0]}` : 'Ваши записи'}
         </h1>
+        {tgId ? (
+          <button
+            type="button"
+            className="text-xs text-[var(--brand-primary)] mt-2"
+            onClick={() => {
+              haptic('light')
+              openVkMiniApp(tgId)
+            }}
+          >
+            Подключить VK
+          </button>
+        ) : null}
       </header>
 
       {deeplinkBusiness ? (

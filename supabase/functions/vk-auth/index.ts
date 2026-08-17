@@ -12,6 +12,40 @@ const cors = {
 
 const APP_ID = 54724722
 
+async function hmacSha256B64(message: string, secret: string) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message))
+  let b64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+  b64 = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return b64
+}
+
+/**
+ * Проверка подписи launch params VK Mini App.
+ * Алгоритм: https://dev.vk.com/mini-apps/development/launch-params-sign
+ */
+async function verifyVkMiniAppSign(params: Record<string, string>, secret: string) {
+  const vkParams: Record<string, string> = {}
+  for (const [k, v] of Object.entries(params)) {
+    if (k.startsWith('vk_')) vkParams[k] = v
+  }
+  const sortedKeys = Object.keys(vkParams).sort()
+  const query = sortedKeys.map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(vkParams[k])}`).join('&')
+  const expected = await hmacSha256B64(query, secret)
+  return params.sign === expected
+}
+
+/** Legacy auth_key из standalone/OAuth (md5(app_id + '_' + user_id + '_' + secret)). */
+function verifyVkAuthKey(vkUserId: number, sign: string, secret: string) {
+  return sign === md5(`${APP_ID}_${vkUserId}_${secret}`)
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
 
@@ -50,8 +84,9 @@ Deno.serve(async (req) => {
   }
 
   const action = String(body.action || '')
-  const vkUserId = Number(body.vk_user_id)
-  const sign = String(body.sign || '')
+  const params = (body.params as Record<string, string>) || {}
+  const vkUserId = Number(params.vk_user_id || body.vk_user_id)
+  const sign = String(params.sign || body.sign || '')
   const telegramId = Number(body.telegram_id)
 
   if (!Number.isFinite(vkUserId) || !sign) {
@@ -61,8 +96,10 @@ Deno.serve(async (req) => {
     })
   }
 
-  const expectedSign = md5(`${APP_ID}_${vkUserId}_${vkSecret}`)
-  if (sign !== expectedSign) {
+  const isMiniAppSign = await verifyVkMiniAppSign(params, vkSecret)
+  const isAuthKey = verifyVkAuthKey(vkUserId, sign, vkSecret)
+
+  if (!isMiniAppSign && !isAuthKey) {
     return new Response(JSON.stringify({ ok: false, error: 'bad_sign' }), {
       status: 401,
       headers: { ...cors, 'Content-Type': 'application/json' },
