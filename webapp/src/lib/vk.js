@@ -1,5 +1,18 @@
 import { WebApp } from './telegram'
 
+function safeOpenExternal(url) {
+  try {
+    if (WebApp.openLink) {
+      const options = { try_instant_view: false }
+      const unsafe = WebApp.openLink
+      return unsafe(url, options)
+    }
+  } catch (err) {
+    console.warn('openLink failed', err)
+  }
+  window.open(url, '_blank')
+}
+
 export function isVkEnvironment() {
   try {
     return (
@@ -77,10 +90,6 @@ export async function resolveVkProfile() {
 }
 
 export function openVkMiniApp(telegramId) {
-  const url = `https://m.vk.com/app54724722?tg=${telegramId}`
-  if (WebApp.openLink) {
-    WebApp.openLink(url)
-  } else {
-    window.open(url, '_blank')
-  }
+  const url = `https://vk.com/app54724722?tg=${telegramId}`
+  safeOpenExternal(url)
 }
