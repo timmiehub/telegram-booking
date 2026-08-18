@@ -84,6 +84,7 @@ export async function resolveVkProfile() {
 
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return { ok: false, error: json.error || 'resolve_failed' }
+  if (json.profile && !json.profile.vk_id) json.profile.vk_id = vkUserId
   return { ok: true, ...json }
 }
 
@@ -122,6 +123,7 @@ export async function createVkProfile() {
 
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return { ok: false, error: json.error || 'create_failed' }
+  if (json.profile && !json.profile.vk_id) json.profile.vk_id = vkUserId
   return { ok: true, ...json }
 }
 
