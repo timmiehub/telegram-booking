@@ -191,7 +191,11 @@ export function openTelegramForVkLink(code) {
   const url = `https://t.me/booking_inapp_bot?start=link_${code}`
   if (vkBridge?.send) {
     vkBridge.send('VKWebAppOpenLink', { url })
-  } else {
-    window.open(url, '_blank')
+    return
+  }
+  const opened = window.open(url, '_blank')
+  if (!opened) {
+    // popup blocked or not allowed — open in the same tab
+    window.location.href = url
   }
 }

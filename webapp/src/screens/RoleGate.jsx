@@ -19,16 +19,21 @@ export default function RoleGate({
   const isVkOnly = Boolean(profile?.vk_id && !profile?.telegram_id)
 
   async function handleConnectTelegram() {
-    setLinkStatus('Создаём ссылку...')
-    const result = await createVkLinkCode()
-    if (!result.ok) {
+    try {
+      setLinkStatus('Создаём ссылку...')
+      const result = await createVkLinkCode()
+      if (!result.ok) {
+        haptic('error')
+        setLinkStatus(result.error || 'Не удалось создать ссылку')
+        return
+      }
+      haptic('light')
+      openTelegramForVkLink(result.code)
+      setLinkStatus('Откройте Telegram и запустите бота. После запуска обновите страницу.')
+    } catch (err) {
       haptic('error')
-      setLinkStatus('Не удалось создать ссылку')
-      return
+      setLinkStatus(String(err?.message || err || 'Ошибка'))
     }
-    haptic('light')
-    openTelegramForVkLink(result.code)
-    setLinkStatus('Откройте Telegram и запустите бота. После запуска обновите страницу.')
   }
 
   return (
@@ -53,7 +58,7 @@ export default function RoleGate({
         </p>
 
         {isVk ? (
-          <div className="mt-4 flex flex-col gap-2 w-full max-w-[300px]">
+          <div className="mt-4 flex flex-col gap-2 w-full max-w-[300px] mx-auto">
             <div className="card px-3 py-3 text-center">
               {isVkOnly ? (
                 <>
@@ -121,26 +126,6 @@ export default function RoleGate({
               <Icon name="icon-chevron-right" size={18} className="opacity-70" />
             </span>
           </button>
-
-          {isVkOnly ? (
-            <div className="flex flex-col gap-2 mt-2">
-              <p className="text-xs text-[var(--brand-muted)] text-center">
-                Это профиль ВК. Чтобы подтянуть кабинет/записи из Telegram:
-              </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleConnectTelegram}
-              >
-                Подключить Telegram
-              </button>
-              {linkStatus ? (
-                <p className="text-xs text-[var(--brand-muted)] text-center">
-                  {linkStatus}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
         </div>
         <p className="mt-6 text-center text-xs text-[var(--brand-muted)]">
           Роль можно сменить внизу любого экрана.
