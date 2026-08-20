@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/telegram-booking/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c1016" />
+    <meta name="color-scheme" content="dark" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Запись</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #0c1016;
+        color: #f4f6f8;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      }
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding: 24px;
+        background:
+          radial-gradient(900px 420px at 20% -10%, rgba(168, 66, 90, 0.2), transparent 55%),
+          radial-gradient(700px 380px at 100% 0%, rgba(201, 161, 90, 0.1), transparent 50%),
+          #0c1016;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      #boot-splash.is-hide {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      #boot-splash .mark {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        background: linear-gradient(145deg, #c25a72, #8a3348);
+        box-shadow: 0 12px 40px rgba(168, 66, 90, 0.36);
+        display: grid;
+        place-items: center;
+        animation: boot-pulse 1.4s ease-in-out infinite;
+      }
+      #boot-splash .mark svg { display: block; }
+      #boot-splash .title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      #boot-splash .sub {
+        margin: 0;
+        font-size: 14px;
+        color: #9aa3b2;
+      }
+      #boot-splash .bar {
+        width: min(220px, 70vw);
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(243, 244, 246, 0.08);
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      #boot-splash .bar > i {
+        display: block;
+        height: 100%;
+        width: 40%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #a8425a, #d98ca0);
+        animation: boot-bar 1.1s ease-in-out infinite;
+      }
+      @keyframes boot-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+      }
+      @keyframes boot-bar {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(320%); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash .mark,
+        #boot-splash .bar > i { animation: none; }
+      }
+    </style>
+    <script type="module" crossorigin src="/telegram-booking/assets/index-VHTr-yB1.js"></script>
+    <link rel="modulepreload" crossorigin href="/telegram-booking/assets/useTelegramChrome-BLejdfrX.js">
+    <link rel="stylesheet" crossorigin href="/telegram-booking/assets/index-DS5WyHAU.css">
+  </head>
+  <body>
+    <div id="boot-splash" role="status" aria-live="polite" aria-busy="true">
+      <div class="mark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M7 3.5h10a2 2 0 0 1 2 2V20l-7-3.2L5 20V5.5a2 2 0 0 1 2-2Z" fill="#fdf3f0" opacity="0.95"/>
+        </svg>
+      </div>
+      <p class="title">Запись</p>
+      <p class="sub">Готовим расписание…</p>
+      <div class="bar" aria-hidden="true"><i></i></div>
+    </div>
+    <div id="root"></div>
+    <script>
+      window.__BOOT_SPLASH_AT = Date.now()
+      window.__hideBootSplash = function () {
+        var el = document.getElementById('boot-splash')
+        if (!el || el.classList.contains('is-hide')) return
+        el.classList.add('is-hide')
+        el.setAttribute('aria-busy', 'false')
+        setTimeout(function () {
+          if (el && el.parentNode) el.parentNode.removeChild(el)
+        }, 400)
+      }
+      function showBootError(msg) {
+        var el = document.getElementById('boot-splash')
+        if (!el) return
+        var sub = el.querySelector('.sub')
+        if (sub) sub.textContent = msg
+        el.querySelector('.bar').style.display = 'none'
+      }
+      window.addEventListener('error', function (e) {
+        showBootError('Ошибка: ' + (e.message || 'load failed'))
+      })
+      window.addEventListener('unhandledrejection', function (e) {
+        showBootError('Ошибка: ' + (e.reason?.message || e.reason || 'rejected'))
+      })
+      setTimeout(function () {
+        if (!document.getElementById('root').hasChildNodes()) {
+          showBootError('JS не загрузился. Проверьте консоль.')
+        }
+      }, 8000)
+    </script>
+  </body>
+</html>
